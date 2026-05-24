@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { pusherClient } from "@/lib/pusher";
+import { getPusherClient } from "@/lib/pusher";
 import styles from "./lobby.module.css";
 
 interface LobbyEntry {
@@ -22,20 +22,17 @@ export default function LobbyPage() {
   const [lobbies, setLobbies] = useState<LobbyEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Create lobby modal
   const [showCreate, setShowCreate] = useState(false);
   const [createName, setCreateName] = useState("");
   const [createPassword, setCreatePassword] = useState("");
   const [createError, setCreateError] = useState("");
   const [createLoading, setCreateLoading] = useState(false);
 
-  // Join password modal
   const [joinTarget, setJoinTarget] = useState<LobbyEntry | null>(null);
   const [joinPassword, setJoinPassword] = useState("");
   const [joinError, setJoinError] = useState("");
   const [joinLoading, setJoinLoading] = useState(false);
 
-  // Check session
   useEffect(() => {
     fetch("/api/auth/session")
       .then(r => r.json())
@@ -45,7 +42,6 @@ export default function LobbyPage() {
       });
   }, [router]);
 
-  // Fetch lobbies
   const fetchLobbies = useCallback(async () => {
     const res = await fetch("/api/lobbies/list");
     const data = await res.json();
@@ -55,9 +51,8 @@ export default function LobbyPage() {
 
   useEffect(() => { fetchLobbies(); }, [fetchLobbies]);
 
-  // Realtime lobby list updates via Pusher
   useEffect(() => {
-    const channel = pusherClient.subscribe("lobbies");
+    const channel = getPusherClient().subscribe("lobbies");
 
     channel.bind("lobby-created", (lobby: LobbyEntry) => {
       setLobbies(prev => [lobby, ...prev]);
@@ -69,7 +64,7 @@ export default function LobbyPage() {
       setLobbies(prev => prev.filter(l => l.id !== id));
     });
 
-    return () => { pusherClient.unsubscribe("lobbies"); };
+    return () => { getPusherClient().unsubscribe("lobbies"); };
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -126,7 +121,6 @@ export default function LobbyPage() {
       <div className={styles.bg} aria-hidden="true" />
 
       <div className={styles.container}>
-        {/* Header */}
         <div className={styles.header}>
           <button className={styles.backBtn} onClick={() => router.push("/")}>← Back</button>
           <div className={styles.titleBlock}>
@@ -140,7 +134,6 @@ export default function LobbyPage() {
 
         <div className={styles.divider}><span>♠ ✦ ♠</span></div>
 
-        {/* Lobby list */}
         {loading ? (
           <div className={styles.emptyState}>
             <span className={styles.loadingDots}><span>·</span><span>·</span><span>·</span></span>
@@ -191,7 +184,6 @@ export default function LobbyPage() {
         {joinError && <p className={styles.globalError}>⚠ {joinError}</p>}
       </div>
 
-      {/* Create lobby modal */}
       {showCreate && (
         <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) setShowCreate(false); }}>
           <div className={styles.modal}>
@@ -232,7 +224,6 @@ export default function LobbyPage() {
         </div>
       )}
 
-      {/* Join password modal */}
       {joinTarget && (
         <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) { setJoinTarget(null); setJoinPassword(""); setJoinError(""); }}}>
           <div className={styles.modal}>
