@@ -45,8 +45,11 @@ export default function LobbyRoom() {
   useEffect(() => {
     const channel = getPusherClient().subscribe(`lobby-${id}`);
 
-    channel.bind("player-joined", (data: { players: string[] }) => {
+    channel.bind("player-joined", (data: { players: string[]; gameStarting?: boolean }) => {
       setPlayers(data.players);
+      if (data.gameStarting) {
+        router.push(`/game/${id}`);
+      }
     });
     channel.bind("player-left", (data: { players: string[]; newHost: string }) => {
       setPlayers(data.players);
@@ -57,7 +60,7 @@ export default function LobbyRoom() {
     });
 
     return () => { getPusherClient().unsubscribe(`lobby-${id}`); };
-  }, [id]);
+  }, [id, router]);
 
   const handleLeave = useCallback(async () => {
     await fetch("/api/lobbies/leave", {
@@ -148,7 +151,7 @@ export default function LobbyRoom() {
               <p className={styles.waitingText}>Waiting for an opponent to join...</p>
             </div>
           ) : isHost ? (
-            <button className={styles.startBtn} onClick={() => setShowComingSoon(true)}>
+            <button className={styles.startBtn} onClick={() => router.push(`/game/${id}`)}>
               ⚔ Start Duel
             </button>
           ) : (
