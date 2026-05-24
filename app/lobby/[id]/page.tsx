@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { pusherClient } from "@/lib/pusher";
+import { getPusherClient } from "@/lib/pusher";
 import styles from "./room.module.css";
 
 export default function LobbyRoom() {
@@ -16,7 +16,6 @@ export default function LobbyRoom() {
   const [loading, setLoading] = useState(true);
   const [showComingSoon, setShowComingSoon] = useState(false);
 
-  // Check session and auto-join
   useEffect(() => {
     fetch("/api/auth/session")
       .then(r => r.json())
@@ -24,16 +23,13 @@ export default function LobbyRoom() {
         if (!data.isLoggedIn) { router.push("/"); return; }
         setUsername(data.username);
 
-        // Join the lobby
         const res = await fetch("/api/lobbies/join", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ lobbyId: id }),
         });
-        const lobbyData = await res.json();
         if (!res.ok) { router.push("/lobby"); return; }
 
-        // Fetch current state
         const listRes = await fetch("/api/lobbies/list");
         const list = await listRes.json();
         const lobby = list.find((l: { id: string }) => l.id === id);
@@ -46,9 +42,8 @@ export default function LobbyRoom() {
       });
   }, [id, router]);
 
-  // Realtime updates
   useEffect(() => {
-    const channel = pusherClient.subscribe(`lobby-${id}`);
+    const channel = getPusherClient().subscribe(`lobby-${id}`);
 
     channel.bind("player-joined", (data: { players: string[] }) => {
       setPlayers(data.players);
@@ -61,7 +56,7 @@ export default function LobbyRoom() {
       setClosed(true);
     });
 
-    return () => { pusherClient.unsubscribe(`lobby-${id}`); };
+    return () => { getPusherClient().unsubscribe(`lobby-${id}`); };
   }, [id]);
 
   const handleLeave = useCallback(async () => {
@@ -73,7 +68,6 @@ export default function LobbyRoom() {
     router.push("/lobby");
   }, [id, router]);
 
-  // Leave on browser close / navigate away
   useEffect(() => {
     const handler = () => {
       navigator.sendBeacon("/api/lobbies/leave", JSON.stringify({ lobbyId: id }));
@@ -125,7 +119,6 @@ export default function LobbyRoom() {
 
         <div className={styles.divider}><span>♥ ✦ ♥</span></div>
 
-        {/* Players */}
         <div className={styles.playersSection}>
           <h2 className={styles.sectionLabel}>Players at the Table</h2>
           <div className={styles.playerSlots}>
@@ -148,7 +141,6 @@ export default function LobbyRoom() {
           </div>
         </div>
 
-        {/* Status / Start */}
         <div className={styles.actionArea}>
           {!isFull ? (
             <div className={styles.waitingBox}>
@@ -165,7 +157,6 @@ export default function LobbyRoom() {
         </div>
       </div>
 
-      {/* Coming soon overlay */}
       {showComingSoon && (
         <div className={styles.overlay} onClick={() => setShowComingSoon(false)}>
           <div className={styles.comingSoonBox}>
