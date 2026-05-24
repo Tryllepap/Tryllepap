@@ -1,0 +1,234 @@
+.main {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%,   rgba(139, 26, 26, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(201,146,58, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, var(--deep) 0%, var(--black) 100%);
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  bottom: -2rem;
+  color: var(--border-gold);
+  animation: floatUp linear infinite, sway ease-in-out infinite alternate;
+  font-style: normal;
+  will-change: transform, opacity;
+}
+.particleRed { color: var(--crimson); }
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(5,3,2,0.7) 100%);
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6rem;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  animation: fadeIn 1s ease both;
+}
+
+.suitsRow, .suitsRowBottom {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeIn 1.2s ease both;
+}
+.suitsRowBottom { animation-delay: 0.3s; }
+
+.suitBlack { font-size: 1.3rem; color: var(--border-gold); opacity: 0.6; }
+.suitRed   { font-size: 1.3rem; color: var(--crimson); opacity: 0.7; }
+.ornament  {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  color: var(--text-faint);
+  opacity: 0.6;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 0.95;
+  background: linear-gradient(
+    105deg,
+    var(--gold)       0%,
+    var(--gold-shine) 30%,
+    var(--gold)       50%,
+    var(--gold-light) 70%,
+    var(--gold)       100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) both,
+             shimmer 5s linear infinite 1.4s;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+  color: var(--text-muted);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  animation: fadeIn 1.6s ease both;
+  animation-delay: 0.4s;
+}
+
+.ornamentalLine {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 340px;
+  animation: fadeIn 1s ease 0.5s both;
+}
+.ornamentalLine::before,
+.ornamentalLine::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-gold), transparent);
+  opacity: 0.4;
+}
+
+.authArea { animation: fadeIn 1s ease 0.7s both; }
+
+.sessionLoader {
+  display: flex;
+  gap: 6px;
+  color: var(--text-faint);
+  font-size: 1.4rem;
+}
+.sessionLoader span { animation: pulse 1.2s ease-in-out infinite; }
+.sessionLoader span:nth-child(2) { animation-delay: 0.2s; }
+.sessionLoader span:nth-child(3) { animation-delay: 0.4s; }
+
+.loggedIn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.welcomeText {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.usernameHighlight {
+  color: var(--gold-light);
+  font-style: normal;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btnPrimary {
+  position: relative;
+  background: linear-gradient(135deg, #7a3a0a 0%, var(--gold) 50%, #7a3a0a 100%);
+  background-size: 200% auto;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.9rem 2.2rem;
+  cursor: pointer;
+  transition: background-position 0.4s, box-shadow 0.3s, transform 0.15s, opacity 0.2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  animation: borderGlow 3s ease-in-out infinite;
+}
+.btnPrimary:hover:not(:disabled) {
+  background-position: right center;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.6), var(--glow-gold);
+  transform: translateY(-2px);
+}
+.btnPrimary:active:not(:disabled) { transform: translateY(0); }
+.btnPrimary:disabled { opacity: 0.5; cursor: not-allowed; animation: none; }
+
+.btnBadge {
+  position: absolute;
+  top: -9px; right: -10px;
+  background: var(--crimson);
+  color: var(--white);
+  font-size: 0.45rem;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 20px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.btnGhost {
+  background: transparent;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.9rem 2.2rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.btnGhost:hover {
+  background: rgba(201, 146, 58, 0.08);
+  color: var(--gold-light);
+  box-shadow: 0 0 20px rgba(201, 146, 58, 0.15);
+  transform: translateY(-2px);
+}
+.btnGhost:active { transform: translateY(0); }
+
+@media (max-width: 480px) {
+  .buttonGroup { flex-direction: column; width: 100%; max-width: 280px; }
+  .btnPrimary, .btnGhost { width: 100%; text-align: center; }
+}
