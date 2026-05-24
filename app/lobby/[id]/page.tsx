@@ -14,30 +14,85 @@ export default function LobbyRoom() {
   const [lobbyName, setLobbyName] = useState<string>("");
   const [closed, setClosed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showComingSoon, setShowComingSoon] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/session")
       .then(r => r.json())
       .then(async data => {
         if (!data.isLoggedIn) { router.push("/"); return; }
-        setUsername(data.username);
+        const me = data.username;
+        setUsername(me);
 
+        // First fetch the lobby list to check current state
+        const listRes = await fetch("/api/lobbies/list");
+        const list = await listRes.json();
+        const lobby = list.find((l: { id: string }) => l.id === id);
+
+        if (!lobby) {
+          // Lobby not in list — may be in-game already, try joining directly
+          const res = await fetch("/api/lobbies/join", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lobbyId: id }),
+          });
+          const joinData = await res.json();
+
+          if (!res.ok) {
+            setError(joinData.error || "Could not join lobby.");
+            setLoading(false);
+            return;
+          }
+
+          // Refresh list after joining
+          const listRes2 = await fetch("/api/lobbies/list");
+          const list2 = await listRes2.json();
+          const lobby2 = list2.find((l: { id: string }) => l.id === id);
+          if (lobby2) {
+            setPlayers(lobby2.players);
+            setHostUsername(lobby2.hostUsername);
+            setLobbyName(lobby2.name);
+          }
+          setLoading(false);
+          return;
+        }
+
+        // Already in the lobby — no need to call join again
+        if (lobby.players.includes(me)) {
+          setPlayers(lobby.players);
+          setHostUsername(lobby.hostUsername);
+          setLobbyName(lobby.name);
+          setLoading(false);
+          return;
+        }
+
+        // Not in lobby yet — join it
         const res = await fetch("/api/lobbies/join", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ lobbyId: id }),
         });
-        if (!res.ok) { router.push("/lobby"); return; }
+        const joinData = await res.json();
 
-        const listRes = await fetch("/api/lobbies/list");
-        const list = await listRes.json();
-        const lobby = list.find((l: { id: string }) => l.id === id);
-        if (lobby) {
-          setPlayers(lobby.players);
-          setHostUsername(lobby.hostUsername);
-          setLobbyName(lobby.name);
+        if (!res.ok) {
+          setError(joinData.error || "Could not join lobby.");
+          setLoading(false);
+          return;
         }
+
+        // Fetch updated lobby state
+        const listRes3 = await fetch("/api/lobbies/list");
+        const list3 = await listRes3.json();
+        const updatedLobby = list3.find((l: { id: string }) => l.id === id);
+        if (updatedLobby) {
+          setPlayers(updatedLobby.players);
+          setHostUsername(updatedLobby.hostUsername);
+          setLobbyName(updatedLobby.name);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Something went wrong. Please try again.");
         setLoading(false);
       });
   }, [id, router]);
@@ -83,6 +138,20 @@ export default function LobbyRoom() {
     return (
       <main className={styles.main}>
         <div className={styles.loadingDots}><span>·</span><span>·</span><span>·</span></div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className={styles.main}>
+        <div className={styles.closedBox}>
+          <p className={styles.closedIcon}>⚠</p>
+          <p className={styles.closedText}>{error}</p>
+          <button className={styles.returnBtn} onClick={() => router.push("/lobby")}>
+            Return to Hall
+          </button>
+        </div>
       </main>
     );
   }
@@ -159,24 +228,6 @@ export default function LobbyRoom() {
           )}
         </div>
       </div>
-
-      {showComingSoon && (
-        <div className={styles.overlay} onClick={() => setShowComingSoon(false)}>
-          <div className={styles.comingSoonBox}>
-            <span className={styles.cornerTl}>♠</span>
-            <span className={styles.cornerBr}>♦</span>
-            <p className={styles.comingSoonIcon}>⚔</p>
-            <h2 className={styles.comingSoonTitle}>Duel Coming Soon</h2>
-            <p className={styles.comingSoonText}>
-              The game mechanics are being forged.<br />
-              Check back soon, challenger.
-            </p>
-            <button className={styles.dismissBtn} onClick={() => setShowComingSoon(false)}>
-              Return to Table
-            </button>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
