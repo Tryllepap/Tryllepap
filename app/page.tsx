@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import styles from "./page.module.css";
 
@@ -20,6 +21,7 @@ const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
 type ModalMode = "login" | "register" | null;
 
 export default function Home() {
+  const router = useRouter();
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
@@ -92,9 +94,8 @@ export default function Home() {
                 Welcome back, <span className={styles.usernameHighlight}>{username}</span>
               </p>
               <div className={styles.buttonGroup}>
-                <button className={styles.btnPrimary} disabled>
-                  Play Now
-                  <span className={styles.btnBadge}>Coming Soon</span>
+                <button className={styles.btnPrimary} onClick={() => router.push("/lobby")}>
+                  Browse Lobbies
                 </button>
                 <button className={styles.btnGhost} onClick={handleLogout}>
                   Sign Out
