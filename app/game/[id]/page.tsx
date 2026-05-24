@@ -8,19 +8,14 @@ import { CARD_MAP } from "@/lib/game/cards";
 import styles from "./game.module.css";
 
 type RpsChoice = "rock" | "paper" | "scissors";
-
-const RPS_EMOJI: Record<RpsChoice, string> = {
-  rock: "🪨", paper: "📄", scissors: "✂️",
-};
-const RPS_LABELS: Record<RpsChoice, string> = {
-  rock: "Rock", paper: "Paper", scissors: "Scissors",
-};
+const RPS_EMOJI: Record<RpsChoice, string> = { rock: "🪨", paper: "📄", scissors: "✂️" };
+const RPS_LABELS: Record<RpsChoice, string> = { rock: "Rock", paper: "Paper", scissors: "Scissors" };
 
 interface PlacedSpell {
   instanceId: string;
   cardId: string;
-  x: number; // percent of board width
-  y: number; // percent of board height
+  x: number;
+  y: number;
   playerId: string;
 }
 
@@ -30,7 +25,6 @@ export default function GamePage() {
   const [myUsername, setMyUsername] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [inspectCard, setInspectCard] = useState<string | null>(null);
-  const [inspectSource, setInspectSource] = useState<"hand" | "spell" | "board">("hand");
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,25 +39,25 @@ export default function GamePage() {
   // Drag
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragOverDualist, setDragOverDualist] = useState(false);
-  const [dragOverBoard, setDragOverBoard] = useState(false);
+  const [dragOverMyBoard, setDragOverMyBoard] = useState(false);
 
-  // Placed spells on board (visual only — actual game state tracked server-side)
+  // Placed spells
   const [placedSpells, setPlacedSpells] = useState<PlacedSpell[]>([]);
   const [inspectSpell, setInspectSpell] = useState<PlacedSpell | null>(null);
 
-  // Log panel resize
-  const [logWidth, setLogWidth] = useState(220);
+  // Log resize
+  const [logWidth, setLogWidth] = useState(200);
   const logResizing = useRef(false);
   const logResizeStart = useRef(0);
-  const logWidthStart = useRef(220);
+  const logWidthStart = useRef(200);
 
-  // Inspector panel resize
-  const [inspectorWidth, setInspectorWidth] = useState(260);
+  // Inspector resize
+  const [inspectorWidth, setInspectorWidth] = useState(240);
   const inspResizing = useRef(false);
   const inspResizeStart = useRef(0);
-  const inspWidthStart = useRef(260);
+  const inspWidthStart = useRef(240);
 
-  const boardRef = useRef<HTMLDivElement>(null);
+  const myBoardRef = useRef<HTMLDivElement>(null);
   const myUsernameRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -121,35 +115,16 @@ export default function GamePage() {
       setGameState(state);
       if (state.phase === "rps" && state.rpsResult && rpsPhase !== "revealing" && rpsPhase !== "done") runRpsReveal(state);
       if (state.phase === "playing") { setRpsPhase("choosing"); acknowledgedRps.current = false; }
-      // Clear placed spells on new round
       if (state.phase === "round_result" || state.phase === "game_over") setPlacedSpells([]);
     });
     return () => { getPusherClient().unsubscribe(`game-${id}`); };
   }, [id, rpsPhase, runRpsReveal]);
 
-  // ── Resize handlers ──────────────────────────────────────────────────────────
-  const startLogResize = (e: React.MouseEvent) => {
-    logResizing.current = true;
-    logResizeStart.current = e.clientX;
-    logWidthStart.current = logWidth;
-    e.preventDefault();
-  };
-  const startInspResize = (e: React.MouseEvent) => {
-    inspResizing.current = true;
-    inspResizeStart.current = e.clientX;
-    inspWidthStart.current = inspectorWidth;
-    e.preventDefault();
-  };
+  // Resize
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      if (logResizing.current) {
-        const delta = e.clientX - logResizeStart.current;
-        setLogWidth(Math.max(120, Math.min(400, logWidthStart.current + delta)));
-      }
-      if (inspResizing.current) {
-        const delta = inspResizeStart.current - e.clientX;
-        setInspectorWidth(Math.max(180, Math.min(420, inspWidthStart.current + delta)));
-      }
+      if (logResizing.current) setLogWidth(Math.max(120, Math.min(360, logWidthStart.current + (e.clientX - logResizeStart.current))));
+      if (inspResizing.current) setInspectorWidth(Math.max(160, Math.min(400, inspWidthStart.current + (inspResizeStart.current - e.clientX))));
     };
     const onUp = () => { logResizing.current = false; inspResizing.current = false; };
     window.addEventListener("mousemove", onMove);
@@ -157,7 +132,6 @@ export default function GamePage() {
     return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
   }, []);
 
-  // ── Card actions ─────────────────────────────────────────────────────────────
   const handleRpsClick = (choice: RpsChoice) => {
     if (rpsPhase !== "choosing") return;
     setRpsMyChoice(choice); setRpsPhase("waiting");
@@ -166,13 +140,11 @@ export default function GamePage() {
 
   const handlePlaySpell = useCallback((cardId: string, dropX?: number, dropY?: number) => {
     sendAction("play_spell", { cardId });
-    // Place spell visually on the board
-    const x = dropX !== undefined ? dropX : 30 + Math.random() * 40;
-    const y = dropY !== undefined ? dropY : 20 + Math.random() * 60;
+    const x = dropX !== undefined ? dropX : 20 + Math.random() * 60;
+    const y = dropY !== undefined ? dropY : 15 + Math.random() * 70;
     setPlacedSpells(prev => [...prev, {
       instanceId: `${cardId}-${Date.now()}`,
-      cardId,
-      x, y,
+      cardId, x, y,
       playerId: myUsernameRef.current!,
     }]);
     setSelectedCard(null); setInspectCard(null);
@@ -183,22 +155,21 @@ export default function GamePage() {
     setSelectedCard(null); setInspectCard(null);
   }, [sendAction]);
 
-  // ── Drag ────────────────────────────────────────────────────────────────────
   const onDragStart = (cardId: string) => { setDragCardId(cardId); setSelectedCard(cardId); };
-  const onDragEnd = () => { setDragCardId(null); setDragOverDualist(false); setDragOverBoard(false); };
+  const onDragEnd = () => { setDragCardId(null); setDragOverDualist(false); setDragOverMyBoard(false); };
 
   const onDropDualist = () => {
     if (dragCardId) handlePlaceDualist(dragCardId);
     setDragOverDualist(false); setDragCardId(null);
   };
 
-  const onDropBoard = (e: React.DragEvent) => {
-    if (!dragCardId || !boardRef.current) return;
-    const rect = boardRef.current.getBoundingClientRect();
+  const onDropMyBoard = (e: React.DragEvent) => {
+    if (!dragCardId || !myBoardRef.current) return;
+    const rect = myBoardRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     handlePlaySpell(dragCardId, x, y);
-    setDragOverBoard(false); setDragCardId(null);
+    setDragOverMyBoard(false); setDragCardId(null);
   };
 
   if (loading || !gameState || !myUsername) {
@@ -216,9 +187,12 @@ export default function GamePage() {
   const isMyTurn = gameState.activePlayerId === myUsername;
   const phase = gameState.phase;
 
-  // What to show in the inspector
   const activeInspectCardId = inspectSpell ? inspectSpell.cardId : inspectCard;
   const inspectedCardDef = activeInspectCardId ? CARD_MAP[activeInspectCardId] : null;
+
+  // Spells split by side
+  const mySpells = placedSpells.filter(s => s.playerId === myUsername);
+  const oppSpells = placedSpells.filter(s => s.playerId !== myUsername);
 
   return (
     <main className={styles.main}>
@@ -247,25 +221,26 @@ export default function GamePage() {
         </div>
       </header>
 
-      {/* Main layout */}
-      <div className={styles.gameLayout} style={{ gridTemplateColumns: `${logWidth}px 1fr ${inspectorWidth}px` }}>
-
-        {/* Log Panel */}
+      {/* Main layout: log | field | inspector */}
+      <div
+        className={styles.gameLayout}
+        style={{ gridTemplateColumns: `${logWidth}px 1fr ${inspectorWidth}px` }}
+      >
+        {/* Log */}
         <aside className={styles.logPanel}>
           <div className={styles.logHeader}><span className={styles.logTitle}>♠ Battle Log</span></div>
           <div className={styles.logScroll}>
-            {gameState.eventLog.map((entry, i) => (
-              <p key={i} className={`${styles.logLine} ${i === gameState.eventLog.length - 1 ? styles.logLineLatest : ""}`}>{entry}</p>
+            {gameState.eventLog.map((e, i) => (
+              <p key={i} className={`${styles.logLine} ${i === gameState.eventLog.length - 1 ? styles.logLineLatest : ""}`}>{e}</p>
             ))}
           </div>
-          {/* Resize handle */}
-          <div className={styles.resizeHandleRight} onMouseDown={startLogResize} />
+          <div className={styles.resizeHandleRight} onMouseDown={e => { logResizing.current = true; logResizeStart.current = e.clientX; logWidthStart.current = logWidth; e.preventDefault(); }} />
         </aside>
 
         {/* Battlefield */}
         <div className={styles.battlefield}>
 
-          {/* RPS */}
+          {/* ── RPS ── */}
           {phase === "rps" && (
             <div className={styles.rpsContainer}>
               <div className={styles.rpsOpponent}>
@@ -295,10 +270,10 @@ export default function GamePage() {
                 </div>
                 {rpsPhase === "choosing" && (
                   <div className={styles.rpsButtons}>
-                    {(["rock","paper","scissors"] as RpsChoice[]).map(choice => (
-                      <button key={choice} className={styles.rpsBtn} onClick={() => handleRpsClick(choice)}>
-                        <span className={styles.rpsBtnEmoji}>{RPS_EMOJI[choice]}</span>
-                        <span className={styles.rpsBtnLabel}>{RPS_LABELS[choice]}</span>
+                    {(["rock","paper","scissors"] as RpsChoice[]).map(c => (
+                      <button key={c} className={styles.rpsBtn} onClick={() => handleRpsClick(c)}>
+                        <span className={styles.rpsBtnEmoji}>{RPS_EMOJI[c]}</span>
+                        <span className={styles.rpsBtnLabel}>{RPS_LABELS[c]}</span>
                       </button>
                     ))}
                   </div>
@@ -309,135 +284,59 @@ export default function GamePage() {
             </div>
           )}
 
-          {/* Playing */}
+          {/* ── Playing field ── */}
           {(phase === "playing" || phase === "resolution") && (
-            <div className={styles.playArea}>
+            <div className={styles.field}>
 
-              {/* Opponent strip */}
-              <div className={styles.opponentStrip}>
-                <div className={styles.opponentInfo}>
-                  <span className={styles.stripLabel}>{opponent.username}</span>
-                  {opponent.hasPassed && <span className={styles.passedBadge}>Passed</span>}
-                </div>
-                <div className={styles.opponentHandRow}>
+              {/* ── OPPONENT HALF ── */}
+              <div className={styles.oppHalf}>
+                {/* Opponent hand — face down, top center */}
+                <div className={styles.oppHandRow}>
                   {opponent.hand.map((_, i) => (
-                    <div key={i} className={styles.opponentCard}><div className={styles.opponentCardInner}>♦</div></div>
+                    <div key={i} className={styles.oppHandCard}><span>♦</span></div>
                   ))}
                   {opponent.hand.length === 0 && <span className={styles.emptyHandNote}>No cards</span>}
                 </div>
-                {/* Opponent dualist */}
-                <div className={styles.opponentDualistSlot}>
-                  <span className={styles.dualistSlotLabel}>Dualist</span>
-                  <div className={`${styles.dualistCard} ${opponent.dualist ? styles.dualistCardFilled : styles.dualistCardEmpty}`}>
-                    {opponent.dualist ? (
-                      phase === "resolution" ? (
-                        <div className={styles.dualistCardInner}>
-                          <span className={styles.dualistCardSuit}>♦</span>
-                          <span className={styles.dualistCardName}>{CARD_MAP[opponent.dualist]?.name}</span>
-                          <span className={styles.dualistCardPower}>{opponent.dualistPower}</span>
-                        </div>
-                      ) : (
-                        <div className={styles.dualistCardInner}>
-                          <span className={styles.dualistCardBack}>?</span>
-                        </div>
-                      )
-                    ) : <span className={styles.dualistCardPlaceholder}>—</span>}
-                  </div>
-                </div>
-              </div>
 
-              {/* Turn badge */}
-              <div className={styles.turnRow}>
-                <div className={styles.centerLine} />
-                <div className={`${styles.turnBadge} ${isMyTurn ? styles.turnBadgeMine : styles.turnBadgeOpp}`}>
-                  {phase === "resolution" ? "⚔ Resolving" : isMyTurn ? "Your Turn" : `${opponent.username}'s Turn`}
-                </div>
-                <div className={styles.centerLine} />
-              </div>
-
-              {/* Main play board */}
-              <div className={styles.boardAndDualist}>
-
-                {/* My dualist slot — card shaped */}
-                <div className={styles.myDualistArea}>
-                  <span className={styles.dualistSlotLabel}>Your Dualist</span>
-                  <div
-                    className={`
-                      ${styles.dualistCard}
-                      ${me.dualist ? styles.dualistCardFilled : styles.dualistCardEmpty}
-                      ${dragOverDualist && !me.dualist ? styles.dualistCardDragOver : ""}
-                      ${!me.dualist && isMyTurn && phase === "playing" ? styles.dualistCardActive : ""}
-                    `}
-                    onDragOver={e => { e.preventDefault(); if (!me.dualist) setDragOverDualist(true); }}
-                    onDragLeave={() => setDragOverDualist(false)}
-                    onDrop={e => { e.preventDefault(); onDropDualist(); }}
-                    onClick={() => { if (selectedCard && isMyTurn && !me.dualist && phase === "playing") handlePlaceDualist(selectedCard); }}
-                  >
-                    {me.dualist ? (
-                      <div className={styles.dualistCardInner}>
-                        <span className={styles.dualistCardSuit}>♦</span>
-                        <span className={styles.dualistCardName}>{CARD_MAP[me.dualist]?.name}</span>
-                        <span className={styles.dualistCardPower}>{me.dualistPower}</span>
-                        <span className={styles.dualistCardEffectText}>{CARD_MAP[me.dualist]?.dualistDescription}</span>
-                      </div>
-                    ) : (
-                      <div className={styles.dualistCardInner}>
-                        <span className={styles.dualistCardSuit} style={{ opacity: 0.15 }}>♦</span>
-                        <span className={styles.dualistDropHint}>
-                          {!isMyTurn || phase !== "playing" ? "No Dualist"
-                            : dragOverDualist ? "Drop here"
-                            : selectedCard ? "Click to place"
-                            : "Drag or select"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  {me.hasPassed && <span className={styles.passedBadge}>Passed</span>}
+                {/* Opponent name + passed badge */}
+                <div className={styles.oppNameRow}>
+                  <span className={styles.fieldPlayerName}>{opponent.username}</span>
+                  {opponent.hasPassed && <span className={styles.passedBadge}>Passed</span>}
                 </div>
 
-                {/* Open spell board */}
-                <div
-                  ref={boardRef}
-                  className={`${styles.spellBoard} ${dragOverBoard ? styles.spellBoardDragOver : ""} ${isMyTurn && phase === "playing" ? styles.spellBoardActive : ""}`}
-                  onDragOver={e => { e.preventDefault(); setDragOverBoard(true); }}
-                  onDragLeave={() => setDragOverBoard(false)}
-                  onDrop={e => { e.preventDefault(); onDropBoard(e); }}
-                  onClick={e => {
-                    // Click on empty board area with selected card = cast spell at that position
-                    if (!selectedCard || !isMyTurn || phase !== "playing") return;
-                    if ((e.target as HTMLElement).closest(`.${styles.spellToken}`)) return;
-                    const rect = boardRef.current!.getBoundingClientRect();
-                    const x = ((e.clientX - rect.left) / rect.width) * 100;
-                    const y = ((e.clientY - rect.top) / rect.height) * 100;
-                    handlePlaySpell(selectedCard, x, y);
-                  }}
-                >
-                  {/* Hint text */}
-                  {isMyTurn && phase === "playing" && placedSpells.filter(s => s.playerId === myUsername).length === 0 && (
-                    <div className={styles.boardHint}>
-                      {dragOverBoard
-                        ? <span className={styles.boardHintDrop}>Release to cast spell</span>
-                        : <span className={styles.boardHintText}>Drag cards here or click to cast spells</span>}
+                {/* Opponent board — spell drop zone / display */}
+                <div className={styles.oppBoard}>
+                  {/* Opponent dualist — center of their half */}
+                  <div className={styles.oppDualistAnchor}>
+                    <div className={`${styles.dualistSlot} ${opponent.dualist ? styles.dualistSlotFilled : ""}`}>
+                      {opponent.dualist ? (
+                        phase === "resolution" ? (
+                          <div className={styles.dualistSlotInner}>
+                            <span className={styles.dsCardSuit}>♦</span>
+                            <span className={styles.dsCardName}>{CARD_MAP[opponent.dualist]?.name}</span>
+                            <span className={styles.dsCardPower}>{opponent.dualistPower}</span>
+                          </div>
+                        ) : (
+                          <div className={styles.dualistSlotInner}>
+                            <span className={styles.dsCardBack}>?</span>
+                          </div>
+                        )
+                      ) : <span className={styles.dsEmpty}>—</span>}
                     </div>
-                  )}
+                    <span className={styles.dualistLabel}>Dualist</span>
+                  </div>
 
-                  {/* Placed spell tokens */}
-                  {placedSpells.map(spell => {
+                  {/* Opponent spells */}
+                  {oppSpells.map(spell => {
                     const card = CARD_MAP[spell.cardId];
-                    const isMine = spell.playerId === myUsername;
                     const isInspected = inspectSpell?.instanceId === spell.instanceId;
                     return (
                       <div
                         key={spell.instanceId}
-                        className={`${styles.spellToken} ${isMine ? styles.spellTokenMine : styles.spellTokenOpp} ${isInspected ? styles.spellTokenInspected : ""}`}
+                        className={`${styles.spellToken} ${styles.spellTokenOpp} ${isInspected ? styles.spellTokenInspected : ""}`}
                         style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
-                        onClick={e => {
-                          e.stopPropagation();
-                          setInspectSpell(isInspected ? null : spell);
-                          setInspectCard(null);
-                        }}
+                        onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
                       >
-                        {/* Future: replace with card image */}
                         <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
                         <div className={styles.spellTokenLabel}>{card?.name}</div>
                       </div>
@@ -446,24 +345,159 @@ export default function GamePage() {
                 </div>
               </div>
 
-              {/* Action buttons */}
-              {isMyTurn && phase === "playing" && (
-                <div className={styles.actionRow}>
-                  {selectedCard && (
-                    <>
-                      {!me.dualist && (
-                        <button className={styles.dualistBtn} onClick={() => handlePlaceDualist(selectedCard)}>
-                          ⚔ Place as Dualist
-                        </button>
-                      )}
-                      <button className={styles.spellBtn} onClick={() => handlePlaySpell(selectedCard)}>
-                        ✦ Cast as Spell
-                      </button>
-                    </>
-                  )}
-                  <button className={styles.passBtn} onClick={() => sendAction("pass")}>Pass Turn</button>
+              {/* ── DIVIDER ── */}
+              <div className={styles.fieldDivider}>
+                <div className={styles.fieldDividerLine} />
+                <div className={`${styles.turnBadge} ${isMyTurn ? styles.turnBadgeMine : styles.turnBadgeOpp}`}>
+                  {phase === "resolution" ? "⚔ Resolving"
+                    : isMyTurn ? "Your Turn"
+                    : `${opponent.username}'s Turn`}
                 </div>
-              )}
+                <div className={styles.fieldDividerLine} />
+              </div>
+
+              {/* ── MY HALF ── */}
+              <div className={styles.myHalf}>
+                {/* My board — spells + dualist center */}
+                <div
+                  ref={myBoardRef}
+                  className={`${styles.myBoard} ${dragOverMyBoard ? styles.myBoardDragOver : ""} ${isMyTurn && phase === "playing" ? styles.myBoardActive : ""}`}
+                  onDragOver={e => { e.preventDefault(); setDragOverMyBoard(true); }}
+                  onDragLeave={() => setDragOverMyBoard(false)}
+                  onDrop={e => { e.preventDefault(); onDropMyBoard(e); }}
+                  onClick={e => {
+                    if (!selectedCard || !isMyTurn || phase !== "playing") return;
+                    if ((e.target as HTMLElement).closest(`.${styles.spellToken}`) || (e.target as HTMLElement).closest(`.${styles.dualistSlot}`)) return;
+                    const rect = myBoardRef.current!.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    handlePlaySpell(selectedCard, x, y);
+                  }}
+                >
+                  {/* Hint */}
+                  {isMyTurn && phase === "playing" && mySpells.length === 0 && !me.dualist && (
+                    <div className={styles.boardHint}>
+                      <span>{dragOverMyBoard ? "Release to cast" : "Drag cards here · click to cast spells"}</span>
+                    </div>
+                  )}
+
+                  {/* My dualist — center of my half */}
+                  <div className={styles.myDualistAnchor}>
+                    <span className={styles.dualistLabel}>Your Dualist</span>
+                    <div
+                      className={`
+                        ${styles.dualistSlot}
+                        ${me.dualist ? styles.dualistSlotFilled : ""}
+                        ${dragOverDualist && !me.dualist ? styles.dualistSlotDragOver : ""}
+                        ${!me.dualist && isMyTurn && phase === "playing" ? styles.dualistSlotActive : ""}
+                      `}
+                      onDragOver={e => { e.preventDefault(); e.stopPropagation(); if (!me.dualist) setDragOverDualist(true); }}
+                      onDragLeave={() => setDragOverDualist(false)}
+                      onDrop={e => { e.preventDefault(); e.stopPropagation(); onDropDualist(); }}
+                      onClick={e => { e.stopPropagation(); if (selectedCard && isMyTurn && !me.dualist && phase === "playing") handlePlaceDualist(selectedCard); }}
+                    >
+                      {me.dualist ? (
+                        <div className={styles.dualistSlotInner}>
+                          <span className={styles.dsCardSuit}>♦</span>
+                          <span className={styles.dsCardName}>{CARD_MAP[me.dualist]?.name}</span>
+                          <span className={styles.dsCardPower}>{me.dualistPower}</span>
+                          <span className={styles.dsCardEffect}>{CARD_MAP[me.dualist]?.dualistDescription}</span>
+                        </div>
+                      ) : (
+                        <div className={styles.dualistSlotInner}>
+                          <span className={styles.dsEmpty} style={{ opacity: 0.2 }}>♦</span>
+                          <span className={styles.dsHint}>
+                            {!isMyTurn || phase !== "playing" ? "No Dualist"
+                              : dragOverDualist ? "Drop here"
+                              : selectedCard ? "Click to place"
+                              : "Drag or select"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    {me.hasPassed && <span className={styles.passedBadge}>Passed</span>}
+                  </div>
+
+                  {/* My spells */}
+                  {mySpells.map(spell => {
+                    const card = CARD_MAP[spell.cardId];
+                    const isInspected = inspectSpell?.instanceId === spell.instanceId;
+                    return (
+                      <div
+                        key={spell.instanceId}
+                        className={`${styles.spellToken} ${styles.spellTokenMine} ${isInspected ? styles.spellTokenInspected : ""}`}
+                        style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
+                        onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
+                      >
+                        <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
+                        <div className={styles.spellTokenLabel}>{card?.name}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* My name + action buttons */}
+                <div className={styles.myNameRow}>
+                  <span className={styles.fieldPlayerName}>You</span>
+                  {isMyTurn && phase === "playing" && (
+                    <div className={styles.actionBtns}>
+                      {selectedCard && !me.dualist && (
+                        <button className={styles.dualistBtn} onClick={() => handlePlaceDualist(selectedCard)}>⚔ Place as Dualist</button>
+                      )}
+                      {selectedCard && (
+                        <button className={styles.spellBtn} onClick={() => handlePlaySpell(selectedCard)}>✦ Cast as Spell</button>
+                      )}
+                      <button className={styles.passBtn} onClick={() => sendAction("pass")}>Pass Turn</button>
+                    </div>
+                  )}
+                </div>
+
+                {/* My hand — bottom center, floating above the field */}
+                <div className={styles.myHand}>
+                  {me.hand.map((cardId, i) => {
+                    const card = CARD_MAP[cardId];
+                    if (!card) return null;
+                    const isSelected = selectedCard === cardId;
+                    const isInspected = inspectCard === cardId;
+                    const disabled = !isMyTurn || phase !== "playing";
+                    return (
+                      <div
+                        key={`${cardId}-${i}`}
+                        className={`${styles.handCard} ${isSelected ? styles.handCardSelected : ""} ${isInspected ? styles.handCardInspected : ""} ${disabled ? styles.handCardDisabled : ""}`}
+                        style={{ "--card-index": i } as React.CSSProperties}
+                        draggable={!disabled}
+                        onDragStart={() => onDragStart(cardId)}
+                        onDragEnd={onDragEnd}
+                        onClick={() => {
+                          setInspectCard(isInspected ? null : cardId);
+                          setInspectSpell(null);
+                          if (!disabled) setSelectedCard(isSelected ? null : cardId);
+                        }}
+                      >
+                        <div className={styles.handCardGlow} />
+                        <div className={styles.handCardTop}>
+                          <span className={styles.handCardName}>{card.name}</span>
+                          <span className={styles.handCardPower}>{card.basePower}</span>
+                        </div>
+                        <div className={styles.handCardSuit}>♦</div>
+                        <div className={styles.handCardBottom}>
+                          <div className={styles.handCardEffectRow}>
+                            <span className={styles.handCardEffectTag}>Spell</span>
+                            <span className={styles.handCardEffectDesc}>{card.spellDescription}</span>
+                          </div>
+                          <div className={styles.handCardEffectRow}>
+                            <span className={styles.handCardEffectTag}>Dualist</span>
+                            <span className={styles.handCardEffectDesc}>{card.dualistDescription}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {me.hand.length === 0 && phase === "playing" && (
+                    <p className={styles.emptyHand}>No cards in hand</p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -503,11 +537,9 @@ export default function GamePage() {
           )}
         </div>
 
-        {/* Inspector panel */}
+        {/* Inspector */}
         <aside className={`${styles.inspectorPanel} ${inspectedCardDef ? styles.inspectorVisible : ""}`}>
-          {/* Resize handle */}
-          <div className={styles.resizeHandleLeft} onMouseDown={startInspResize} />
-
+          <div className={styles.resizeHandleLeft} onMouseDown={e => { inspResizing.current = true; inspResizeStart.current = e.clientX; inspWidthStart.current = inspectorWidth; e.preventDefault(); }} />
           {inspectedCardDef ? (
             <div className={styles.inspectorCard}>
               <div className={styles.inspectorImageSlot}>
@@ -528,17 +560,13 @@ export default function GamePage() {
                   <span className={styles.inspectorEffectLabel}>⚔ Dualist Effect</span>
                   <p className={styles.inspectorEffectText}>{inspectedCardDef.dualistDescription}</p>
                 </div>
-                {isMyTurn && phase === "playing" && !inspectSpell && (
+                {isMyTurn && phase === "playing" && !inspectSpell && inspectCard && (
                   <div className={styles.inspectorActions}>
-                    {!me.dualist && (
-                      <button className={styles.inspectorDualistBtn} onClick={() => handlePlaceDualist(inspectCard!)}>Place as Dualist</button>
-                    )}
-                    <button className={styles.inspectorSpellBtn} onClick={() => handlePlaySpell(inspectCard!)}>Cast as Spell</button>
+                    {!me.dualist && <button className={styles.inspectorDualistBtn} onClick={() => handlePlaceDualist(inspectCard)}>Place as Dualist</button>}
+                    <button className={styles.inspectorSpellBtn} onClick={() => handlePlaySpell(inspectCard)}>Cast as Spell</button>
                   </div>
                 )}
-                {inspectSpell && (
-                  <p className={styles.inspectorSpellNote}>This spell was cast on the board.</p>
-                )}
+                {inspectSpell && <p className={styles.inspectorSpellNote}>Spell played on the board.</p>}
               </div>
               <button className={styles.inspectorClose} onClick={() => { setInspectCard(null); setInspectSpell(null); }}>✕</button>
             </div>
@@ -550,57 +578,6 @@ export default function GamePage() {
           )}
         </aside>
       </div>
-
-      {/* Hand */}
-      {(phase === "playing" || phase === "rps") && (
-        <div className={styles.handSection}>
-          <div className={styles.handLabel}>
-            Your Hand <span className={styles.handCount}>{me.hand.length} cards</span>
-          </div>
-          <div className={styles.hand}>
-            {me.hand.map((cardId, i) => {
-              const card = CARD_MAP[cardId];
-              if (!card) return null;
-              const isSelected = selectedCard === cardId;
-              const isInspected = inspectCard === cardId;
-              const disabled = !isMyTurn || phase !== "playing";
-              return (
-                <div
-                  key={`${cardId}-${i}`}
-                  className={`${styles.handCard} ${isSelected ? styles.handCardSelected : ""} ${isInspected ? styles.handCardInspected : ""} ${disabled ? styles.handCardDisabled : ""}`}
-                  style={{ "--card-index": i } as React.CSSProperties}
-                  draggable={!disabled}
-                  onDragStart={() => onDragStart(cardId)}
-                  onDragEnd={onDragEnd}
-                  onClick={() => {
-                    setInspectCard(isInspected ? null : cardId);
-                    setInspectSpell(null);
-                    if (!disabled) setSelectedCard(isSelected ? null : cardId);
-                  }}
-                >
-                  <div className={styles.handCardGlow} />
-                  <div className={styles.handCardTop}>
-                    <span className={styles.handCardName}>{card.name}</span>
-                    <span className={styles.handCardPower}>{card.basePower}</span>
-                  </div>
-                  <div className={styles.handCardSuit}>♦</div>
-                  <div className={styles.handCardBottom}>
-                    <div className={styles.handCardEffectRow}>
-                      <span className={styles.handCardEffectTag}>Spell</span>
-                      <span className={styles.handCardEffectDesc}>{card.spellDescription}</span>
-                    </div>
-                    <div className={styles.handCardEffectRow}>
-                      <span className={styles.handCardEffectTag}>Dualist</span>
-                      <span className={styles.handCardEffectDesc}>{card.dualistDescription}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            {me.hand.length === 0 && <p className={styles.emptyHand}>No cards in hand</p>}
-          </div>
-        </div>
-      )}
     </main>
   );
 }
