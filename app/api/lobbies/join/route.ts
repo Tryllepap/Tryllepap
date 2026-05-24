@@ -41,6 +41,17 @@ export async function POST(req: NextRequest) {
 
     lobby.players.push(session.username);
     await saveLobby(lobby);
+    // When lobby is full, initialize the game state
+if (lobby.players.length === lobby.maxPlayers) {
+  const { createInitialState } = await import("@/lib/game");
+  const { saveGameState } = await import("@/lib/game-store");
+  const gameState = createInitialState(
+    lobby.id,
+    { id: lobby.players[0], username: lobby.players[0] },
+    { id: lobby.players[1], username: lobby.players[1] }
+  );
+  await saveGameState(lobby.id, gameState);
+}
 
     await pusherServer.trigger(`lobby-${lobbyId}`, "player-joined", {
       players: lobby.players,
