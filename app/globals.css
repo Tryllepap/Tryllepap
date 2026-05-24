@@ -1,0 +1,104 @@
+:root {
+  --black:       #0a0806;
+  --deep:        #0f0c09;
+  --surface:     #1a1410;
+  --surface-2:   #221c15;
+  --surface-3:   #2d2419;
+  --border:      #3d3020;
+  --border-gold: #6b4f1e;
+  --gold:        #c9923a;
+  --gold-light:  #e8b96a;
+  --gold-shine:  #f5d89a;
+  --crimson:     #8b1a1a;
+  --crimson-mid: #a02020;
+  --text:        #e8dcc8;
+  --text-muted:  #9b8a6e;
+  --text-faint:  #5c4e38;
+  --white:       #fdf6ea;
+
+  --font-display: var(--font-cinzel), 'Cinzel', serif;
+  --font-body:    var(--font-im-fell), 'IM Fell English', serif;
+
+  --radius-sm: 4px;
+  --radius:    8px;
+  --radius-lg: 14px;
+
+  --shadow-gold: 0 0 40px rgba(201, 146, 58, 0.15), 0 0 80px rgba(201, 146, 58, 0.05);
+  --shadow-card: 0 8px 40px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.6);
+  --glow-gold:   0 0 20px rgba(201, 146, 58, 0.4);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: var(--black);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--deep); }
+::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg);   opacity: 0; }
+  10%  { opacity: 0.12; }
+  90%  { opacity: 0.06; }
+  100% { transform: translateY(-110vh) rotate(25deg); opacity: 0; }
+}
+
+@keyframes sway {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(30px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes titleReveal {
+  0%   { opacity: 0; letter-spacing: 0.6em; filter: blur(8px); }
+  100% { opacity: 1; letter-spacing: 0.15em; filter: blur(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes borderGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(201,146,58,0.2), inset 0 0 12px rgba(201,146,58,0.03); }
+  50%       { box-shadow: 0 0 28px rgba(201,146,58,0.4), inset 0 0 20px rgba(201,146,58,0.07); }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
