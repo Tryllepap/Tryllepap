@@ -19,15 +19,20 @@ export async function POST(req: NextRequest) {
     if (!lobby) {
       return NextResponse.json({ error: "Lobby not found." }, { status: 404 });
     }
-    if (lobby.status !== "waiting") {
-      return NextResponse.json({ error: "This lobby is no longer available." }, { status: 400 });
-    }
-    if (lobby.players.length >= lobby.maxPlayers) {
-      return NextResponse.json({ error: "Lobby is full." }, { status: 400 });
-    }
+
+    // If player is already in the lobby, just let them in
     if (lobby.players.includes(session.username)) {
       return NextResponse.json({ success: true, lobbyId });
     }
+
+    if (lobby.status === "ingame") {
+      return NextResponse.json({ error: "This game has already started." }, { status: 400 });
+    }
+
+    if (lobby.players.length >= lobby.maxPlayers) {
+      return NextResponse.json({ error: "Lobby is full." }, { status: 400 });
+    }
+
     if (lobby.passwordHash) {
       if (!password) {
         return NextResponse.json({ error: "This lobby requires a password." }, { status: 403 });
@@ -39,25 +44,12 @@ export async function POST(req: NextRequest) {
     }
 
     lobby.players.push(session.username);
-
-    // When lobby is full, initialize the game state
-    if (lobby.players.length === lobby.maxPlayers) {
-      lobby.status = "ingame";
-      const { createInitialState } = await import("@/lib/game");
-      const { saveGameState } = await import("@/lib/game-store");
-      const gameState = createInitialState(
-        lobby.id,
-        { id: lobby.players[0], username: lobby.players[0] },
-        { id: lobby.players[1], username: lobby.players[1] }
-      );
-      await saveGameState(lobby.id, gameState);
-    }
-
+    // Keep status as "waiting" — game only starts when host clicks Start Duel
     await saveLobby(lobby);
 
     await pusherServer.trigger(`lobby-${lobbyId}`, "player-joined", {
       players: lobby.players,
-      gameStarting: lobby.players.length === lobby.maxPlayers,
+      gameStarting: false,
     });
     await pusherServer.trigger("lobbies", "lobby-updated", {
       id: lobby.id,
