@@ -21,6 +21,26 @@ const RPS_LABELS: Record<RpsChoice, string> = {
   scissors: "Scissors",
 };
 
+interface BoardSpell {
+  cardId: string;
+  instanceId: string;
+  x: number;
+  y: number;
+  rotation: number;
+  playerId: string;
+}
+
+function randomSpellPos(existingSpells: BoardSpell[]): { x: number; y: number; rotation: number } {
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const x = 5 + Math.random() * 65;
+    const y = 10 + Math.random() * 65;
+    const rotation = (Math.random() - 0.5) * 28;
+    const tooClose = existingSpells.some(s => Math.abs(s.x - x) < 14 && Math.abs(s.y - y) < 18);
+    if (!tooClose) return { x, y, rotation };
+  }
+  return { x: 5 + Math.random() * 65, y: 10 + Math.random() * 65, rotation: (Math.random() - 0.5) * 28 };
+}
+
 export default function GamePage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
@@ -30,7 +50,8 @@ export default function GamePage() {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // RPS animation state
+  const [boardSpells, setBoardSpells] = useState<BoardSpell[]>([]);
+
   const [rpsPhase, setRpsPhase] = useState<"choosing" | "waiting" | "revealing" | "done">("choosing");
   const [rpsMyChoice, setRpsMyChoice] = useState<RpsChoice | null>(null);
   const [rpsOppChoice, setRpsOppChoice] = useState<RpsChoice | null>(null);
@@ -38,16 +59,21 @@ export default function GamePage() {
   const [rpsCountdown, setRpsCountdown] = useState<number | null>(null);
   const acknowledgedRps = useRef(false);
 
-  // Drag state
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragOverDualist, setDragOverDualist] = useState(false);
   const [dragOverSpell, setDragOverSpell] = useState(false);
 
-  // Spell cast animation
   const [castingSpell, setCastingSpell] = useState(false);
+
+  const [logWidth, setLogWidth] = useState(220);
+  const logResizing = useRef(false);
+  const logResizeStartX = useRef(0);
+  const logResizeStartW = useRef(220);
 
   const logRef = useRef<HTMLDivElement>(null);
   const myUsernameRef = useRef<string | null>(null);
+
+  const prevSpellsRef = useRef<{ [playerId: string]: string[] }>({});
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -75,6 +101,38 @@ export default function GamePage() {
       logRef.current.scrollTop = logRef.current.scrollHeight;
     }
   }, [gameState?.eventLog]);
+
+  useEffect(() => {
+    if (!gameState) return;
+    if (gameState.phase === "rps" || gameState.phase === "round_result") {
+      setBoardSpells([]);
+      prevSpellsRef.current = {};
+      return;
+    }
+    gameState.players.forEach(player => {
+      const prev = prevSpellsRef.current[player.id] ?? [];
+      const curr = player.spellsPlayed ?? [];
+      if (curr.length > prev.length) {
+        const newSpells = curr.slice(prev.length);
+        setBoardSpells(existing => {
+          let updated = [...existing];
+          newSpells.forEach(cardId => {
+            const pos = randomSpellPos(updated);
+            updated.push({
+              cardId,
+              instanceId: `${player.id}-${cardId}-${Date.now()}-${Math.random()}`,
+              x: pos.x,
+              y: pos.y,
+              rotation: pos.rotation,
+              playerId: player.id,
+            });
+          });
+          return updated;
+        });
+      }
+      prevSpellsRef.current[player.id] = [...curr];
+    });
+  }, [gameState]);
 
   const sendAction = useCallback(async (action: string, payload: object = {}) => {
     await fetch("/api/game/action", {
@@ -178,6 +236,29 @@ export default function GamePage() {
     setDragCardId(null);
   };
 
+  const onLogResizeMouseDown = (e: React.MouseEvent) => {
+    logResizing.current = true;
+    logResizeStartX.current = e.clientX;
+    logResizeStartW.current = logWidth;
+    e.preventDefault();
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!logResizing.current) return;
+      const delta = e.clientX - logResizeStartX.current;
+      const newW = Math.min(420, Math.max(140, logResizeStartW.current + delta));
+      setLogWidth(newW);
+    };
+    const onMouseUp = () => { logResizing.current = false; };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [logWidth]);
+
   if (loading || !gameState || !myUsername) {
     return (
       <main className={styles.main}>
@@ -197,6 +278,9 @@ export default function GamePage() {
   const phase = gameState.phase;
   const inspectedCardDef = inspectCard ? CARD_MAP[inspectCard] : null;
 
+  const myBoardSpells = boardSpells.filter(s => s.playerId === myUsername);
+  const oppBoardSpells = boardSpells.filter(s => s.playerId !== myUsername);
+
   return (
     <main className={styles.main}>
       <div className={styles.ambientBg} aria-hidden="true">
@@ -205,7 +289,6 @@ export default function GamePage() {
         <div className={styles.ambientOrb3} />
       </div>
 
-      {/* ── Score Bar ── */}
       <header className={styles.scoreBar}>
         <div className={styles.playerScore}>
           <span className={styles.playerScoreName}>{opponent.username}</span>
@@ -230,10 +313,10 @@ export default function GamePage() {
         </div>
       </header>
 
-      {/* ── Main Layout ── */}
-      <div className={styles.gameLayout}>
-
-        {/* LEFT: Log */}
+      <div
+        className={styles.gameLayout}
+        style={{ gridTemplateColumns: `${logWidth}px 1fr 260px` }}
+      >
         <aside className={styles.logPanel}>
           <div className={styles.logHeader}>
             <span className={styles.logTitle}>♠ Battle Log</span>
@@ -245,12 +328,11 @@ export default function GamePage() {
               </p>
             ))}
           </div>
+          <div className={styles.logResizeHandle} onMouseDown={onLogResizeMouseDown} title="Drag to resize" />
         </aside>
 
-        {/* CENTER: Battlefield */}
         <div className={styles.battlefield}>
 
-          {/* RPS Phase */}
           {phase === "rps" && (
             <div className={styles.rpsContainer}>
               <div className={styles.rpsOpponent}>
@@ -313,13 +395,11 @@ export default function GamePage() {
             </div>
           )}
 
-          {/* Playing / Resolution */}
           {(phase === "playing" || phase === "resolution") && (
             <div className={styles.playArea}>
 
-              {/* Opponent side */}
-              <div className={styles.opponentSide}>
-                <div className={styles.sideLabel}>{opponent.username}</div>
+              <div className={styles.opponentHalf}>
+                <div className={styles.halfLabel}>{opponent.username}</div>
                 <div className={styles.opponentHand}>
                   {opponent.hand.map((_, i) => (
                     <div key={i} className={styles.opponentCard}>
@@ -328,8 +408,8 @@ export default function GamePage() {
                   ))}
                   {opponent.hand.length === 0 && <span className={styles.emptyHandNote}>No cards</span>}
                 </div>
-                <div className={styles.dualistRow}>
-                  <span className={styles.dualistRowLabel}>Dualist</span>
+                <div className={styles.dualistArea}>
+                  <span className={styles.dualistAreaLabel}>Dualist</span>
                   <div className={`${styles.dualistZone} ${opponent.dualist ? styles.dualistZoneFilled : ""}`}>
                     {opponent.dualist ? (
                       phase === "resolution" ? (
@@ -346,9 +426,33 @@ export default function GamePage() {
                   </div>
                   {opponent.hasPassed && <span className={styles.passedBadge}>Passed</span>}
                 </div>
+                <div className={styles.spellBoard}>
+                  {oppBoardSpells.map(spell => {
+                    const card = CARD_MAP[spell.cardId];
+                    if (!card) return null;
+                    return (
+                      <div
+                        key={spell.instanceId}
+                        className={`${styles.boardSpell} ${styles.boardSpellOpp}`}
+                        style={{
+                          left: `${spell.x}%`,
+                          top: `${spell.y}%`,
+                          transform: `rotate(${spell.rotation}deg)`,
+                        }}
+                        onClick={() => setInspectCard(spell.cardId)}
+                        title={`${card.name} — click to inspect`}
+                      >
+                        <span className={styles.boardSpellName}>{card.name}</span>
+                        <span className={styles.boardSpellPower}>{card.basePower}</span>
+                      </div>
+                    );
+                  })}
+                  {oppBoardSpells.length === 0 && (
+                    <span className={styles.spellBoardEmpty}>No spells cast</span>
+                  )}
+                </div>
               </div>
 
-              {/* Center divider */}
               <div className={styles.centerDivider}>
                 <div className={styles.centerLine} />
                 <div className={`${styles.turnBadge} ${isMyTurn ? styles.turnBadgeMine : styles.turnBadgeOpp}`}>
@@ -359,10 +463,9 @@ export default function GamePage() {
                 <div className={styles.centerLine} />
               </div>
 
-              {/* My side */}
-              <div className={styles.mySide}>
-                <div className={styles.dualistRow}>
-                  <span className={styles.dualistRowLabel}>Your Dualist</span>
+              <div className={styles.myHalf}>
+                <div className={styles.dualistArea}>
+                  <span className={styles.dualistAreaLabel}>Your Dualist</span>
                   <div
                     className={`
                       ${styles.dualistZone}
@@ -396,22 +499,44 @@ export default function GamePage() {
                   {me.hasPassed && <span className={styles.passedBadge}>Passed</span>}
                 </div>
 
-                {isMyTurn && phase === "playing" && (
-                  <div
-                    className={`${styles.spellZone} ${dragOverSpell ? styles.spellZoneDragOver : ""}`}
-                    onDragOver={e => { e.preventDefault(); setDragOverSpell(true); }}
-                    onDragLeave={() => setDragOverSpell(false)}
-                    onDrop={e => { e.preventDefault(); onDropSpell(); }}
-                    onClick={() => { if (selectedCard) handlePlaySpell(selectedCard); }}
-                  >
-                    <span className={styles.spellZoneIcon}>{castingSpell ? "✨" : "✦"}</span>
-                    <span className={styles.spellZoneText}>
-                      {dragOverSpell ? "Release to cast"
-                        : selectedCard ? "Click to cast as Spell"
-                        : "Drag here to cast a Spell"}
-                    </span>
-                  </div>
-                )}
+                <div
+                  className={`${styles.spellBoard} ${styles.spellBoardMine} ${dragOverSpell ? styles.spellBoardDragOver : ""} ${isMyTurn && phase === "playing" ? styles.spellBoardActive : ""}`}
+                  onDragOver={e => { e.preventDefault(); if (isMyTurn && phase === "playing") setDragOverSpell(true); }}
+                  onDragLeave={() => setDragOverSpell(false)}
+                  onDrop={e => { e.preventDefault(); if (isMyTurn && phase === "playing") onDropSpell(); }}
+                  onClick={() => { if (selectedCard && isMyTurn && phase === "playing") handlePlaySpell(selectedCard); }}
+                >
+                  {myBoardSpells.map(spell => {
+                    const card = CARD_MAP[spell.cardId];
+                    if (!card) return null;
+                    return (
+                      <div
+                        key={spell.instanceId}
+                        className={`${styles.boardSpell} ${styles.boardSpellMine}`}
+                        style={{
+                          left: `${spell.x}%`,
+                          top: `${spell.y}%`,
+                          transform: `rotate(${spell.rotation}deg)`,
+                        }}
+                        onClick={e => { e.stopPropagation(); setInspectCard(spell.cardId); }}
+                        title={`${card.name} — click to inspect`}
+                      >
+                        <span className={styles.boardSpellName}>{card.name}</span>
+                        <span className={styles.boardSpellPower}>{card.basePower}</span>
+                      </div>
+                    );
+                  })}
+                  {myBoardSpells.length === 0 && (
+                    <div className={styles.spellCastHint}>
+                      {isMyTurn && phase === "playing"
+                        ? dragOverSpell ? "✨ Release to cast!"
+                          : selectedCard ? "✦ Click here to cast as Spell"
+                          : "✦ Drag a card here to cast a Spell"
+                        : "Spell area"}
+                    </div>
+                  )}
+                  {castingSpell && <div className={styles.castFlash} />}
+                </div>
 
                 {isMyTurn && phase === "playing" && (
                   <div className={styles.actionRow}>
@@ -420,12 +545,11 @@ export default function GamePage() {
                     </button>
                   </div>
                 )}
-                <div className={styles.sideLabel}>You</div>
+                <div className={styles.halfLabel}>You</div>
               </div>
             </div>
           )}
 
-          {/* Round Result */}
           {phase === "round_result" && (
             <div className={styles.resultOverlay}>
               <div className={styles.resultCard}>
@@ -457,7 +581,6 @@ export default function GamePage() {
             </div>
           )}
 
-          {/* Game Over */}
           {phase === "game_over" && (
             <div className={styles.resultOverlay}>
               <div className={styles.resultCard}>
@@ -492,7 +615,6 @@ export default function GamePage() {
           )}
         </div>
 
-        {/* RIGHT: Card Inspector */}
         <aside className={`${styles.inspectorPanel} ${inspectCard ? styles.inspectorVisible : ""}`}>
           {inspectedCardDef ? (
             <div className={styles.inspectorCard}>
@@ -514,7 +636,7 @@ export default function GamePage() {
                   <span className={styles.inspectorEffectLabel}>⚔ Dualist Effect</span>
                   <p className={styles.inspectorEffectText}>{inspectedCardDef.dualistDescription}</p>
                 </div>
-                {isMyTurn && phase === "playing" && (
+                {isMyTurn && phase === "playing" && me.hand.includes(inspectCard!) && (
                   <div className={styles.inspectorActions}>
                     {!me.dualist && (
                       <button className={styles.inspectorDualistBtn} onClick={() => handlePlaceDualist(inspectCard!)}>
@@ -532,13 +654,12 @@ export default function GamePage() {
           ) : (
             <div className={styles.inspectorEmpty}>
               <span className={styles.inspectorEmptyIcon}>♦</span>
-              <p>Click a card<br />to inspect it</p>
+              <p>Click a card or<br />a played spell<br />to inspect it</p>
             </div>
           )}
         </aside>
       </div>
 
-      {/* Hand */}
       {(phase === "playing" || phase === "rps") && (
         <div className={styles.handSection}>
           <div className={styles.handLabel}>
