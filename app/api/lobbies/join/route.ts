@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Lobby is full." }, { status: 400 });
     }
     if (lobby.players.includes(session.username)) {
-      // Already in lobby — just redirect them
       return NextResponse.json({ success: true, lobbyId });
     }
     if (lobby.passwordHash) {
@@ -40,21 +39,25 @@ export async function POST(req: NextRequest) {
     }
 
     lobby.players.push(session.username);
-    await saveLobby(lobby);
+
     // When lobby is full, initialize the game state
-if (lobby.players.length === lobby.maxPlayers) {
-  const { createInitialState } = await import("@/lib/game");
-  const { saveGameState } = await import("@/lib/game-store");
-  const gameState = createInitialState(
-    lobby.id,
-    { id: lobby.players[0], username: lobby.players[0] },
-    { id: lobby.players[1], username: lobby.players[1] }
-  );
-  await saveGameState(lobby.id, gameState);
-}
+    if (lobby.players.length === lobby.maxPlayers) {
+      lobby.status = "ingame";
+      const { createInitialState } = await import("@/lib/game");
+      const { saveGameState } = await import("@/lib/game-store");
+      const gameState = createInitialState(
+        lobby.id,
+        { id: lobby.players[0], username: lobby.players[0] },
+        { id: lobby.players[1], username: lobby.players[1] }
+      );
+      await saveGameState(lobby.id, gameState);
+    }
+
+    await saveLobby(lobby);
 
     await pusherServer.trigger(`lobby-${lobbyId}`, "player-joined", {
       players: lobby.players,
+      gameStarting: lobby.players.length === lobby.maxPlayers,
     });
     await pusherServer.trigger("lobbies", "lobby-updated", {
       id: lobby.id,
