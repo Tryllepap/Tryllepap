@@ -15,6 +15,7 @@ export default function LobbyRoom() {
   const [closed, setClosed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -24,13 +25,22 @@ export default function LobbyRoom() {
         const me = data.username;
         setUsername(me);
 
-        // First fetch the lobby list to check current state
+        // Fetch lobby state first
         const listRes = await fetch("/api/lobbies/list");
         const list = await listRes.json();
         const lobby = list.find((l: { id: string }) => l.id === id);
 
-        if (!lobby) {
-          // Lobby not in list — may be in-game already, try joining directly
+        if (lobby) {
+          // Already in lobby — no need to join again
+          if (lobby.players.includes(me)) {
+            setPlayers(lobby.players);
+            setHostUsername(lobby.hostUsername);
+            setLobbyName(lobby.name);
+            setLoading(false);
+            return;
+          }
+
+          // Not in lobby yet — join it
           const res = await fetch("/api/lobbies/join", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -44,52 +54,21 @@ export default function LobbyRoom() {
             return;
           }
 
-          // Refresh list after joining
+          // Re-fetch updated lobby
           const listRes2 = await fetch("/api/lobbies/list");
           const list2 = await listRes2.json();
-          const lobby2 = list2.find((l: { id: string }) => l.id === id);
-          if (lobby2) {
-            setPlayers(lobby2.players);
-            setHostUsername(lobby2.hostUsername);
-            setLobbyName(lobby2.name);
+          const updated = list2.find((l: { id: string }) => l.id === id);
+          if (updated) {
+            setPlayers(updated.players);
+            setHostUsername(updated.hostUsername);
+            setLobbyName(updated.name);
           }
           setLoading(false);
-          return;
-        }
-
-        // Already in the lobby — no need to call join again
-        if (lobby.players.includes(me)) {
-          setPlayers(lobby.players);
-          setHostUsername(lobby.hostUsername);
-          setLobbyName(lobby.name);
+        } else {
+          // Lobby not in list at all
+          setError("Lobby not found or has already started.");
           setLoading(false);
-          return;
         }
-
-        // Not in lobby yet — join it
-        const res = await fetch("/api/lobbies/join", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ lobbyId: id }),
-        });
-        const joinData = await res.json();
-
-        if (!res.ok) {
-          setError(joinData.error || "Could not join lobby.");
-          setLoading(false);
-          return;
-        }
-
-        // Fetch updated lobby state
-        const listRes3 = await fetch("/api/lobbies/list");
-        const list3 = await listRes3.json();
-        const updatedLobby = list3.find((l: { id: string }) => l.id === id);
-        if (updatedLobby) {
-          setPlayers(updatedLobby.players);
-          setHostUsername(updatedLobby.hostUsername);
-          setLobbyName(updatedLobby.name);
-        }
-        setLoading(false);
       })
       .catch(() => {
         setError("Something went wrong. Please try again.");
@@ -97,14 +76,12 @@ export default function LobbyRoom() {
       });
   }, [id, router]);
 
+  // Realtime updates
   useEffect(() => {
     const channel = getPusherClient().subscribe(`lobby-${id}`);
 
-    channel.bind("player-joined", (data: { players: string[]; gameStarting?: boolean }) => {
+    channel.bind("player-joined", (data: { players: string[] }) => {
       setPlayers(data.players);
-      if (data.gameStarting) {
-        router.push(`/game/${id}`);
-      }
     });
     channel.bind("player-left", (data: { players: string[]; newHost: string }) => {
       setPlayers(data.players);
@@ -112,6 +89,9 @@ export default function LobbyRoom() {
     });
     channel.bind("lobby-closed", () => {
       setClosed(true);
+    });
+    channel.bind("game-started", () => {
+      router.push(`/game/${id}`);
     });
 
     return () => { getPusherClient().unsubscribe(`lobby-${id}`); };
@@ -124,6 +104,22 @@ export default function LobbyRoom() {
       body: JSON.stringify({ lobbyId: id }),
     });
     router.push("/lobby");
+  }, [id, router]);
+
+  const handleStartGame = useCallback(async () => {
+    setStarting(true);
+    const res = await fetch("/api/game/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lobbyId: id }),
+    });
+    if (res.ok) {
+      router.push(`/game/${id}`);
+    } else {
+      const data = await res.json();
+      setError(data.error || "Failed to start game.");
+      setStarting(false);
+    }
   }, [id, router]);
 
   useEffect(() => {
@@ -220,8 +216,12 @@ export default function LobbyRoom() {
               <p className={styles.waitingText}>Waiting for an opponent to join...</p>
             </div>
           ) : isHost ? (
-            <button className={styles.startBtn} onClick={() => router.push(`/game/${id}`)}>
-              ⚔ Start Duel
+            <button
+              className={styles.startBtn}
+              onClick={handleStartGame}
+              disabled={starting}
+            >
+              {starting ? "Starting..." : "⚔ Start Duel"}
             </button>
           ) : (
             <p className={styles.waitingText}>Waiting for host to start the duel...</p>
