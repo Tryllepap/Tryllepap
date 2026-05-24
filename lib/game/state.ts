@@ -1,57 +1,41 @@
-/**
- * ============================================================
- *  GAME STATE
- *  Defines the shape of a live game and pure helper functions
- *  that produce new states without mutating the original.
- *
- *  All state transitions happen through these helpers so that
- *  adding new mechanics only requires new helper functions.
- * ============================================================
- */
-
-import { STARTING_HAND_SIZE, MAX_HAND_SIZE } from "./rules";
-import { buildDeck, CARD_MAP } from "./cards";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { MAX_HAND_SIZE } from "./rules";
+import { buildDeck } from "./cards";
 
 export type RpsChoice = "rock" | "paper" | "scissors";
 export type GamePhase =
-  | "rps"           // Rock paper scissors to determine first player
-  | "playing"       // Normal turn play
-  | "resolution"    // Both passed — resolving round
-  | "round_result"  // Showing round result before next round
-  | "game_over";    // Match finished
+  | "rps"
+  | "rps_reveal"
+  | "playing"
+  | "resolution"
+  | "round_result"
+  | "game_over";
 
 export interface PlayerState {
   id: string;
   username: string;
-  hand: string[];          // Card ids in hand
-  deck: string[];          // Remaining draw pile
-  discard: string[];       // Discarded cards
-  dualist: string | null;  // Card id placed as Dualist this round
-  dualistPower: number;    // Current Dualist power (base + modifiers)
-  roundsWon: number;       // Rounds won this match
-  hasPassed: boolean;      // Has passed this round
+  hand: string[];
+  deck: string[];
+  discard: string[];
+  dualist: string | null;
+  dualistPower: number;
+  roundsWon: number;
+  hasPassed: boolean;
   rpsChoice: RpsChoice | null;
-  // Log of played spell card ids this round (in order played)
   spellsPlayed: string[];
 }
 
 export interface GameState {
-  id: string;              // Lobby/game id
-  players: PlayerState[];  // Always length 2; index 0 = first player
+  id: string;
+  players: PlayerState[];
   phase: GamePhase;
-  activePlayerId: string;  // Whose turn it is
+  activePlayerId: string;
   roundNumber: number;
-  // Log of events for the UI to display
   eventLog: string[];
-  // Winner of the match (null until game_over)
   matchWinner: string | null;
-  // Winner of last resolved round (null | playerId | "draw")
   lastRoundWinner: string | "draw" | null;
+  rpsResult?: "draw" | string;
+  rpsWinnerId?: string;
 }
-
-// ─── Factory ──────────────────────────────────────────────────────────────────
 
 export function createInitialState(
   gameId: string,
@@ -78,14 +62,11 @@ export function createInitialState(
     phase: "rps",
     activePlayerId: player1.id,
     roundNumber: 1,
-    eventLog: ["Match started. Play Rock, Paper, or Scissors to decide who goes first."],
+    eventLog: ["Match started — play Rock, Paper, or Scissors to decide who goes first."],
     matchWinner: null,
     lastRoundWinner: null,
   };
 }
-
-// ─── Pure state helpers ───────────────────────────────────────────────────────
-// These never mutate — they always return a new GameState.
 
 export function getPlayer(state: GameState, playerId: string): PlayerState {
   return state.players.find(p => p.id === playerId)!;
@@ -106,29 +87,24 @@ export function addLog(state: GameState, message: string): GameState {
   return { ...state, eventLog: [...state.eventLog, message] };
 }
 
-/** Draw n cards from a player's deck into their hand */
 export function drawCards(state: GameState, playerId: string, n: number): GameState {
   return updatePlayer(state, playerId, player => {
     let deck = [...player.deck];
     let hand = [...player.hand];
     let discard = [...player.discard];
-
     for (let i = 0; i < n; i++) {
       if (hand.length >= MAX_HAND_SIZE) break;
       if (deck.length === 0) {
-        // Reshuffle discard into deck
         if (discard.length === 0) break;
         deck = [...discard].sort(() => Math.random() - 0.5);
         discard = [];
       }
       hand.push(deck.shift()!);
     }
-
     return { ...player, hand, deck, discard };
   });
 }
 
-/** Discard n random cards from a player's hand */
 export function discardCards(state: GameState, playerId: string, n: number): GameState {
   return updatePlayer(state, playerId, player => {
     if (player.hand.length === 0) return player;
@@ -143,7 +119,6 @@ export function discardCards(state: GameState, playerId: string, n: number): Gam
   });
 }
 
-/** Remove a specific card from a player's hand */
 export function removeCardFromHand(
   state: GameState,
   playerId: string,
@@ -158,7 +133,6 @@ export function removeCardFromHand(
   });
 }
 
-/** Apply a power delta to a player's current Dualist */
 export function applyPowerDelta(
   state: GameState,
   playerId: string,
@@ -170,16 +144,6 @@ export function applyPowerDelta(
   }));
 }
 
-/** Deal starting hand to both players */
-export function dealStartingHands(state: GameState): GameState {
-  let s = state;
-  for (const player of state.players) {
-    s = drawCards(s, player.id, STARTING_HAND_SIZE);
-  }
-  return s;
-}
-
-/** Reset per-round state for both players, keeping match scores */
 export function resetForNewRound(state: GameState, firstPlayerId: string): GameState {
   return {
     ...state,
