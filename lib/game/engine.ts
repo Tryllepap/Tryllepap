@@ -2,51 +2,79 @@
  * ============================================================
  *  GAME ENGINE
  *  All legal game actions flow through this file.
- *  Each action takes the current GameState and returns a new one.
  *
- *  To add a new action:
- *    1. Write a pure function here that returns GameState.
- *    2. Call it from the API route handler.
- *    3. Document any new rules in lib/game/rules.ts.
+ *  TURN SWITCHING RULE:
+ *    Every time a player plays a card (spell or dualist),
+ *    the active turn passes to the opponent immediately.
+ *
+ *  END OF ROUND DRAW RULE:
+ *    After every round resolves, both players draw 2 cards.
  * ============================================================
  */
 
-import { GameState, GamePhase, RpsChoice, PlayerState,
-         getPlayer, updatePlayer, addLog,
-         drawCards, removeCardFromHand, applyPowerDelta,
-         resetForNewRound } from "./state";
+import {
+  GameState, GamePhase, RpsChoice, PlayerState,
+  getPlayer, updatePlayer, addLog,
+  drawCards, removeCardFromHand,
+  resetForNewRound,
+} from "./state";
 import { CARD_MAP } from "./cards";
-import { MATCH_WIN_ROUNDS } from "./rules";
+import { MATCH_WIN_ROUNDS, END_OF_ROUND_DRAW } from "./rules";
 
 // ─── RPS ──────────────────────────────────────────────────────────────────────
 
-/** A player submits their RPS choice */
 export function submitRpsChoice(
   state: GameState,
   playerId: string,
   choice: RpsChoice
 ): GameState {
+  const player = getPlayer(state, playerId);
+  if (player.rpsChoice) return state;
+
   let s = updatePlayer(state, playerId, p => ({ ...p, rpsChoice: choice }));
+  s = addLog(s, `${player.username} made their choice...`);
 
   const [p1, p2] = s.players;
-  if (!p1.rpsChoice || !p2.rpsChoice) return s; // Waiting for other player
+  if (!p1.rpsChoice || !p2.rpsChoice) return s;
 
-  // Both submitted — resolve
   const winner = resolveRps(p1, p2);
+
   if (winner === "draw") {
-    // Reset choices and try again
-    s = addLog(s, `Both players chose ${p1.rpsChoice}. Draw — play again!`);
+    s = addLog(s, `Both chose ${p1.rpsChoice} — Draw! Play again.`);
     s = updatePlayer(s, p1.id, p => ({ ...p, rpsChoice: null }));
     s = updatePlayer(s, p2.id, p => ({ ...p, rpsChoice: null }));
+    s = { ...s, rpsResult: "draw" };
     return s;
   }
 
-  const loser = s.players.find(p => p.id !== winner)!;
-  s = addLog(s, `${getPlayer(s, winner).username} wins Rock Paper Scissors and goes first!`);
+  const winnerPlayer = getPlayer(s, winner);
+  const loserPlayer = s.players.find(p => p.id !== winner)!;
+  s = addLog(s, `${winnerPlayer.username} (${winnerPlayer.rpsChoice}) beats ${loserPlayer.username} (${loserPlayer.rpsChoice})!`);
+  s = addLog(s, `${winnerPlayer.username} goes first!`);
+  s = { ...s, rpsResult: winner, rpsWinnerId: winner };
+  return s;
+}
 
-  // Deal starting hands and begin
-  s = dealStartingHandsOnce(s);
-  s = { ...s, phase: "playing", activePlayerId: winner };
+/** Called by client after RPS animation finishes — deals hands and starts game */
+export function acknowledgeRps(state: GameState): GameState {
+  if (!state.rpsWinnerId) return state;
+  if (state.phase !== "rps") return state;
+
+  let s = { ...state };
+
+  // Deal starting hands
+  for (const p of s.players) {
+    s = drawCards(s, p.id, 4);
+  }
+
+  s = {
+    ...s,
+    phase: "playing" as GamePhase,
+    activePlayerId: state.rpsWinnerId,
+    rpsResult: undefined,
+    rpsWinnerId: undefined,
+  };
+  s = addLog(s, `── Round 1 begins. ${getPlayer(s, state.rpsWinnerId).username} goes first. ──`);
   return s;
 }
 
@@ -60,21 +88,8 @@ function resolveRps(p1: PlayerState, p2: PlayerState): string | "draw" {
   return beats[p1.rpsChoice!] === p2.rpsChoice ? p1.id : p2.id;
 }
 
-// Only deal once (guard against double-dealing on reconnect)
-let handsDealt = false;
-function dealStartingHandsOnce(state: GameState): GameState {
-  if (handsDealt) return state;
-  handsDealt = true;
-  let s = state;
-  for (const p of s.players) {
-    s = drawCards(s, p.id, 4);
-  }
-  return s;
-}
-
 // ─── Play spell card ──────────────────────────────────────────────────────────
 
-/** A player plays a card from hand as a spell */
 export function playSpellCard(
   state: GameState,
   playerId: string,
@@ -89,26 +104,28 @@ export function playSpellCard(
   const cardDef = CARD_MAP[cardId];
   if (!cardDef) return state;
 
-  // Remove card from hand
   let s = removeCardFromHand(state, playerId, cardId);
-
-  // Move to discard
   s = updatePlayer(s, playerId, p => ({
     ...p,
     discard: [...p.discard, cardId],
     spellsPlayed: [...p.spellsPlayed, cardId],
   }));
 
-  // Apply spell effect
   s = cardDef.spellEffect(s, playerId);
-  s = addLog(s, `${player.username} played ${cardDef.name} as a spell (${cardDef.spellDescription}).`);
+  s = addLog(s, `${player.username} cast ${cardDef.name} as a spell — ${cardDef.spellDescription}.`);
+
+  // Turn switches after playing a card
+  const opponent = s.players.find(p => p.id !== playerId)!;
+  if (!opponent.hasPassed) {
+    s = { ...s, activePlayerId: opponent.id };
+    s = addLog(s, `Turn passes to ${opponent.username}.`);
+  }
 
   return s;
 }
 
 // ─── Place Dualist ────────────────────────────────────────────────────────────
 
-/** A player places a card face-down as their Dualist */
 export function placeDualist(
   state: GameState,
   playerId: string,
@@ -118,7 +135,7 @@ export function placeDualist(
   if (state.activePlayerId !== playerId) return state;
 
   const player = getPlayer(state, playerId);
-  if (player.dualist !== null) return state; // Already placed a Dualist this round
+  if (player.dualist !== null) return state;
   if (!player.hand.includes(cardId)) return state;
 
   const cardDef = CARD_MAP[cardId];
@@ -130,14 +147,20 @@ export function placeDualist(
     dualist: cardId,
     dualistPower: cardDef.basePower,
   }));
-  s = addLog(s, `${player.username} placed a card face-down as their Dualist.`);
+  s = addLog(s, `${player.username} placed ${cardDef.name} face-down as their Dualist.`);
+
+  // Turn switches after placing dualist
+  const opponent = s.players.find(p => p.id !== playerId)!;
+  if (!opponent.hasPassed) {
+    s = { ...s, activePlayerId: opponent.id };
+    s = addLog(s, `Turn passes to ${opponent.username}.`);
+  }
 
   return s;
 }
 
 // ─── Pass ─────────────────────────────────────────────────────────────────────
 
-/** A player presses Pass */
 export function passAction(state: GameState, playerId: string): GameState {
   if (state.phase !== "playing") return state;
   if (state.activePlayerId !== playerId) return state;
@@ -150,7 +173,6 @@ export function passAction(state: GameState, playerId: string): GameState {
     return resolveRound(s);
   }
 
-  // Switch active player
   const opponent = s.players.find(p => p.id !== playerId)!;
   s = { ...s, activePlayerId: opponent.id };
   return s;
@@ -158,30 +180,19 @@ export function passAction(state: GameState, playerId: string): GameState {
 
 // ─── Round resolution ─────────────────────────────────────────────────────────
 
-/**
- * Both players passed — resolve the round.
- * Order of operations (see rules.ts):
- *   1. Reveal Dualists
- *   2. Apply Dualist effects (first-player first)
- *   3. Final power comparison
- *   4. Award round win or draw
- *   5. Check for match winner
- */
 function resolveRound(state: GameState): GameState {
   let s = { ...state, phase: "resolution" as GamePhase };
   s = addLog(s, "── Round Resolution ──");
 
-  // 1. Reveal
   for (const p of s.players) {
     if (p.dualist) {
       const card = CARD_MAP[p.dualist];
-      s = addLog(s, `${p.username} reveals their Dualist: ${card.name} (base power ${card.basePower}).`);
+      s = addLog(s, `${p.username} reveals: ${card.name} (base power ${card.basePower}).`);
     } else {
-      s = addLog(s, `${p.username} has no Dualist! (power 0)`);
+      s = addLog(s, `${p.username} has no Dualist — power 0.`);
     }
   }
 
-  // 2. Dualist effects — first player's Dualist fires first
   for (const p of s.players) {
     if (p.dualist) {
       const card = CARD_MAP[p.dualist];
@@ -190,13 +201,11 @@ function resolveRound(state: GameState): GameState {
     }
   }
 
-  // 3. Calculate final powers
   const [p1, p2] = s.players;
   const pow1 = p1.dualistPower;
   const pow2 = p2.dualistPower;
-  s = addLog(s, `Final powers — ${p1.username}: ${pow1} | ${p2.username}: ${pow2}`);
+  s = addLog(s, `Final — ${p1.username}: ${pow1} | ${p2.username}: ${pow2}`);
 
-  // 4. Award round
   let roundWinner: string | "draw";
   if (pow1 > pow2) {
     roundWinner = p1.id;
@@ -208,12 +217,11 @@ function resolveRound(state: GameState): GameState {
     s = addLog(s, `${p2.username} wins the round!`);
   } else {
     roundWinner = "draw";
-    s = addLog(s, "Round is a draw — no points awarded.");
+    s = addLog(s, "Round draw — no points awarded.");
   }
 
   s = { ...s, lastRoundWinner: roundWinner };
 
-  // 5. Check for match winner
   const matchWinner = s.players.find(p => p.roundsWon >= MATCH_WIN_ROUNDS);
   if (matchWinner) {
     s = addLog(s, `${matchWinner.username} wins the match!`);
@@ -225,19 +233,23 @@ function resolveRound(state: GameState): GameState {
   return s;
 }
 
-/** Called after both players acknowledge the round result — start next round */
+/** Start next round — both players draw END_OF_ROUND_DRAW cards */
 export function startNextRound(state: GameState): GameState {
   if (state.phase !== "round_result") return state;
 
-  // Loser of last round goes first next round (or same if draw)
   let firstPlayerId = state.activePlayerId;
   if (state.lastRoundWinner && state.lastRoundWinner !== "draw") {
-    // Loser goes first
     firstPlayerId = state.players.find(p => p.id !== state.lastRoundWinner)!.id;
   }
 
   let s = resetForNewRound(state, firstPlayerId);
   s = { ...s, roundNumber: state.roundNumber + 1 };
+
+  for (const p of s.players) {
+    s = drawCards(s, p.id, END_OF_ROUND_DRAW);
+  }
+
+  s = addLog(s, `Both players draw ${END_OF_ROUND_DRAW} cards.`);
   s = addLog(s, `── Round ${s.roundNumber} begins. ${getPlayer(s, firstPlayerId).username} goes first. ──`);
   return s;
 }
