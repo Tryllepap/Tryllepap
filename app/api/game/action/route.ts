@@ -1,15 +1,3 @@
-/**
- * POST /api/game/action
- * Body: { lobbyId, action, payload }
- *
- * Actions:
- *   "rps"          payload: { choice: "rock"|"paper"|"scissors" }
- *   "play_spell"   payload: { cardId: string }
- *   "place_dualist" payload: { cardId: string }
- *   "pass"         payload: {}
- *   "next_round"   payload: {}
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
@@ -18,6 +6,7 @@ import { getGameState, saveGameState } from "@/lib/game-store";
 import { pusherServer } from "@/lib/pusher-server";
 import {
   submitRpsChoice,
+  acknowledgeRps,
   playSpellCard,
   placeDualist,
   passAction,
@@ -44,10 +33,12 @@ export async function POST(req: NextRequest) {
 
     const playerId = session.username;
 
-    // ── Route action to engine function ──────────────────────────────────────
     switch (action) {
       case "rps":
         state = submitRpsChoice(state, playerId, payload.choice as RpsChoice);
+        break;
+      case "acknowledge_rps":
+        state = acknowledgeRps(state);
         break;
       case "play_spell":
         state = playSpellCard(state, playerId, payload.cardId);
@@ -66,8 +57,6 @@ export async function POST(req: NextRequest) {
     }
 
     await saveGameState(lobbyId, state);
-
-    // Broadcast new state to both players via Pusher
     await pusherServer.trigger(`game-${lobbyId}`, "state-update", state);
 
     return NextResponse.json({ success: true });
