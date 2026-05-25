@@ -43,7 +43,6 @@ export interface GameState {
   lastRoundWinner: string | "draw" | null;
   rpsResult?: "draw" | string;
   rpsWinnerId?: string;
-  // Track who went first in the previous round so we can alternate
   previousFirstPlayerId?: string;
 }
 
@@ -52,23 +51,20 @@ export function createInitialState(
   player1: { id: string; username: string },
   player2: { id: string; username: string }
 ): GameState {
-export function resetForNewRound(state: GameState, firstPlayerId: string): GameState {
-  return {
-    ...state,
-    phase: "playing",
-    activePlayerId: firstPlayerId,
-    lastRoundWinner: null,
-    previousFirstPlayerId: firstPlayerId,
-    players: state.players.map(p => ({
-      ...p,
-      dualist: null,
-      dualistPower: 0,
-      hasPassed: false,
-      spellsPlayed: [],
-      spellsOnBoard: [],
-    })),
-  };
-}
+  const makePlayer = (p: { id: string; username: string }): PlayerState => ({
+    id: p.id,
+    username: p.username,
+    hand: [],
+    deck: buildDeck(3),
+    discard: [],
+    dualist: null,
+    dualistPower: 0,
+    roundsWon: 0,
+    hasPassed: false,
+    rpsChoice: null,
+    spellsPlayed: [],
+    spellsOnBoard: [],
+  });
 
   return {
     id: gameId,
@@ -105,7 +101,7 @@ export function addLog(state: GameState, message: string): GameState {
 export function drawCards(state: GameState, playerId: string, n: number): GameState {
   return updatePlayer(state, playerId, player => {
     let deck = [...player.deck];
-    const hand = [...player.hand];
+    let hand = [...player.hand];
     let discard = [...player.discard];
     for (let i = 0; i < n; i++) {
       if (hand.length >= MAX_HAND_SIZE) break;
@@ -172,6 +168,7 @@ export function resetForNewRound(state: GameState, firstPlayerId: string): GameS
       dualistPower: 0,
       hasPassed: false,
       spellsPlayed: [],
+      spellsOnBoard: [],
     })),
   };
 }
