@@ -1,7 +1,6 @@
 /**
  * ============================================================
  *  GAME ENGINE
- *  All legal game actions flow through this file.
  *
  *  TURN SWITCHING RULE:
  *    Every time a player plays a card (spell or dualist),
@@ -9,6 +8,21 @@
  *
  *  END OF ROUND DRAW RULE:
  *    After every round resolves, both players draw 2 cards.
+ *
+ *  FIRST PLAYER ALTERNATION:
+ *    Round 1: decided by RPS.
+ *    Round 2+: whoever did NOT go first last round goes first.
+ *    (If previous round was a draw on first player, same player goes first.)
+ *
+ *  FLIP EFFECT:
+ *    Cards marked isFlipEffect=true fire their dualistEffect at reveal
+ *    time (resolution), not when placed. All other dualist effects also
+ *    fire at resolution — isFlipEffect is a UI/description label only;
+ *    the engine already resolves all dualist effects at resolution.
+ *
+ *  INSTANT SPELL:
+ *    Cards marked isInstant=true fire immediately on cast.
+ *    All spell effects fire immediately — isInstant is a label only.
  * ============================================================
  */
 
@@ -71,6 +85,7 @@ export function acknowledgeRps(state: GameState): GameState {
     ...s,
     phase: "playing" as GamePhase,
     activePlayerId: state.rpsWinnerId,
+    previousFirstPlayerId: state.rpsWinnerId,
     rpsResult: undefined,
     rpsWinnerId: undefined,
   };
@@ -111,10 +126,10 @@ export function playSpellCard(
     spellsPlayed: [...p.spellsPlayed, cardId],
   }));
 
+  const effectLabel = cardDef.isInstant ? " (Instant)" : "";
   s = cardDef.spellEffect(s, playerId);
-  s = addLog(s, `${player.username} cast ${cardDef.name} as a spell — ${cardDef.spellDescription}.`);
+  s = addLog(s, `${player.username} cast ${cardDef.name} as a spell${effectLabel} — ${cardDef.spellDescription}.`);
 
-  // Turn switches after playing a card
   const opponent = s.players.find(p => p.id !== playerId)!;
   if (!opponent.hasPassed) {
     s = { ...s, activePlayerId: opponent.id };
@@ -147,9 +162,10 @@ export function placeDualist(
     dualist: cardId,
     dualistPower: cardDef.basePower,
   }));
-  s = addLog(s, `${player.username} placed ${cardDef.name} face-down as their Dualist.`);
 
-  // Turn switches after placing dualist
+  const flipLabel = cardDef.isFlipEffect ? " (Flip Effect)" : "";
+  s = addLog(s, `${player.username} placed ${cardDef.name} face-down as their Dualist${flipLabel}.`);
+
   const opponent = s.players.find(p => p.id !== playerId)!;
   if (!opponent.hasPassed) {
     s = { ...s, activePlayerId: opponent.id };
@@ -193,11 +209,13 @@ function resolveRound(state: GameState): GameState {
     }
   }
 
+  // Apply dualist effects (Flip Effects fire here)
   for (const p of s.players) {
     if (p.dualist) {
       const card = CARD_MAP[p.dualist];
+      const flipLabel = card.isFlipEffect ? " [Flip Effect]" : "";
       s = card.dualistEffect(s, p.id);
-      s = addLog(s, `${p.username}'s Dualist effect: ${card.dualistDescription}.`);
+      s = addLog(s, `${p.username}'s Dualist effect${flipLabel}: ${card.dualistDescription}.`);
     }
   }
 
@@ -233,13 +251,20 @@ function resolveRound(state: GameState): GameState {
   return s;
 }
 
-/** Start next round — both players draw END_OF_ROUND_DRAW cards */
+/** Start next round — alternate who goes first each round */
 export function startNextRound(state: GameState): GameState {
   if (state.phase !== "round_result") return state;
 
-  let firstPlayerId = state.activePlayerId;
-  if (state.lastRoundWinner && state.lastRoundWinner !== "draw") {
-    firstPlayerId = state.players.find(p => p.id !== state.lastRoundWinner)!.id;
+  // Alternate: whoever went first last round sits out, the other goes first
+  let firstPlayerId: string;
+  if (state.previousFirstPlayerId) {
+    // Give first to the player who did NOT go first last round
+    firstPlayerId = state.players.find(p => p.id !== state.previousFirstPlayerId)!.id;
+  } else {
+    // Fallback: loser of the round goes first (original behaviour)
+    firstPlayerId = state.lastRoundWinner && state.lastRoundWinner !== "draw"
+      ? state.players.find(p => p.id !== state.lastRoundWinner)!.id
+      : state.activePlayerId;
   }
 
   let s = resetForNewRound(state, firstPlayerId);
