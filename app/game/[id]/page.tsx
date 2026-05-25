@@ -352,17 +352,17 @@ export default function GamePage() {
                   <div className={styles.dualistAnchor}>
                     <div className={`${styles.dualistSlot} ${opponent.dualist ? styles.dualistSlotFilled : ""}`}>
                       {opponent.dualist ? (
-                        phase === "resolution" ? (
-                          <div className={styles.dsInner}>
-                            <span className={styles.dsSuit}>♦</span>
-                            <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
-                            <span className={styles.dsPower}>{opponent.dualistPower}</span>
-                          </div>
-                        ) : (
-                          <div className={styles.dsInner}><span className={styles.dsBack}>?</span></div>
-                        )
-                      ) : <span className={styles.dsEmpty}>—</span>}
-                    </div>
+phase === "resolution" ? (
+  <div className={styles.dsInner}>
+    {CARD_MAP[opponent.dualist]?.image
+      ? <img src={CARD_MAP[opponent.dualist].image} alt={cardName(opponent.dualist)} className={styles.dsImage} />
+      : <>
+          <span className={styles.dsSuit}>♦</span>
+          <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
+          <span className={styles.dsPower}>{opponent.dualistPower}</span>
+        </>
+    }
+  </div>
                     <span className={styles.dualistLabel}>{t.dualist}</span>
                   </div>
                   {oppSpells.map(spell => {
