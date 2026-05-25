@@ -437,13 +437,18 @@ export default function GamePage() {
                         if (selectedCard && isMyTurn && !me.dualist && phase === "playing") handlePlaceDualist(selectedCard);
                       }}
                     >
-                      {me.dualist ? (
-                        <div className={styles.dsInner}>
-                          <span className={styles.dsSuit}>♦</span>
-                          <span className={styles.dsName}>{cardName(me.dualist)}</span>
-                          <span className={styles.dsPower}>{me.dualistPower}</span>
-                          <span className={styles.dsEffect}>{cardTranslations[me.dualist]?.[locale]?.dualistDescription ?? CARD_MAP[me.dualist]?.dualistDescription}</span>
-                        </div>
+{me.dualist ? (
+  <div className={styles.dsInner}>
+    {CARD_MAP[me.dualist]?.image
+      ? <img src={CARD_MAP[me.dualist].image} alt={cardName(me.dualist)} className={styles.dsImage} />
+      : <>
+          <span className={styles.dsSuit}>♦</span>
+          <span className={styles.dsName}>{cardName(me.dualist)}</span>
+          <span className={styles.dsPower}>{me.dualistPower}</span>
+          <span className={styles.dsEffect}>{cardTranslations[me.dualist]?.[locale]?.dualistDescription ?? CARD_MAP[me.dualist]?.dualistDescription}</span>
+        </>
+    }
+  </div>
                       ) : (
                         <div className={styles.dsInner}>
                           <span className={styles.dsEmpty}>
