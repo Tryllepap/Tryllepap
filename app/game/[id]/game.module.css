@@ -312,6 +312,7 @@
 .handCardName { font-family: var(--font-display); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold-light); line-height: 1.2; }
 .handCardPower { font-family: var(--font-display); font-size: 0.85rem; font-weight: 900; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px; flex-shrink: 0; }
 .handCardSuit { text-align: center; font-size: 0.9rem; color: var(--border-gold); opacity: 0.12; margin: 0.18rem 0; }
+.handCardImage { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 2px; }
 .handCardBottom { display: flex; flex-direction: column; gap: 0.2rem; border-top: 1px solid rgba(61,48,32,0.4); padding-top: 0.28rem; }
 .handCardEffectRow { display: flex; flex-direction: column; gap: 0.06rem; }
 .handCardEffectTag { font-family: var(--font-display); font-size: 0.42rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
@@ -338,6 +339,7 @@
 .inspectorImageSlot { width: 100%; aspect-ratio: 3/2; background: linear-gradient(135deg, var(--surface-2), var(--surface-3)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
 .inspectorImageSlot::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(201,146,58,0.03) 10px, rgba(201,146,58,0.03) 20px); }
 .inspectorImagePlaceholder { font-family: var(--font-display); font-size: 2.8rem; font-weight: 900; color: var(--border-gold); opacity: 0.3; position: relative; z-index: 1; }
+.inspectorImage { width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1; }
 .inspectorImageNote { font-size: 0.58rem; color: var(--text-faint); font-style: italic; position: relative; z-index: 1; }
 .inspectorBody { padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; }
 .inspectorHeader { display: flex; justify-content: space-between; align-items: center; }
