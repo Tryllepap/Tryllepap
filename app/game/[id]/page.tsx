@@ -463,21 +463,24 @@ export default function GamePage() {
                     {me.hasPassed && <span className={styles.passedBadge}>{t.passed}</span>}
                   </div>
 
-                  {mySpells.map(spell => {
-                    const card = CARD_MAP[spell.cardId];
-                    const isInspected = inspectSpell?.instanceId === spell.instanceId;
-                    return (
-                      <div
-                        key={spell.instanceId}
-                        className={`${styles.spellToken} ${styles.spellTokenMine} ${isInspected ? styles.spellTokenInspected : ""}`}
-                        style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
-                        onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
-                      >
-                        <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
-                        <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
-                      </div>
-                    );
-                  })}
+{mySpells.map(spell => {
+  const card = CARD_MAP[spell.cardId];
+  const isInspected = inspectSpell?.instanceId === spell.instanceId;
+  return (
+    <div
+      key={spell.instanceId}
+      className={`${styles.spellToken} ${styles.spellTokenMine} ${isInspected ? styles.spellTokenInspected : ""}`}
+      style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
+      onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
+    >
+      {card?.image
+        ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
+        : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
+      }
+      <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
+    </div>
+  );
+})}
                 </div>
 
                 <div className={styles.playerNameRow}>
