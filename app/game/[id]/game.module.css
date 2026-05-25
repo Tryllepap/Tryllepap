@@ -270,8 +270,9 @@
   border-radius: 5px;
   display: flex; flex-direction: column; align-items: center;
   justify-content: space-between;
-  padding: 0.25rem 0.2rem 0.2rem;
+  padding: 0;
   cursor: pointer; z-index: 5;
+  overflow: hidden;
   transition: transform 0.18s, box-shadow 0.18s;
 }
 .spellToken:hover { transform: translate(-50%, -50%) scale(1.15) translateY(-4px); z-index: 10; }
@@ -279,8 +280,20 @@
 .spellTokenOpp { background: linear-gradient(160deg, #1a1015, #120d0a); border: 1px solid var(--crimson); box-shadow: 0 4px 14px rgba(0,0,0,0.5), 0 0 7px rgba(139,26,26,0.15); }
 .spellTokenInspected { box-shadow: 0 0 0 2px #5a9aff, 0 8px 22px rgba(0,0,0,0.6) !important; z-index: 12 !important; }
 .spellTokenArt { flex: 1; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: var(--border-gold); opacity: 0.5; width: 100%; }
-.spellTokenLabel { font-family: var(--font-display); font-size: 0.38rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
+.spellTokenLabel {
+  font-family: var(--font-display);
+  font-size: 0.38rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 0.15rem 0.15rem;
+  flex-shrink: 0;
+}
 /* ═══ Hand — floating bottom of myHalf ═══════════════════ */
 .myHand {
   display: flex; justify-content: center; align-items: flex-end;
