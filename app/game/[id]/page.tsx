@@ -520,9 +520,15 @@ export default function GamePage() {
                           if (!disabled) setSelectedCard(isSelected ? null : cardId);
                         }}
                       >
-                        {card.image
-                          ? <Image fill src={card.image} alt={card.name} className={styles.handCardImage} />
-                          : <>
+{card.image
+  ? <>
+      <img src={card.image} alt={card.name} className={styles.handCardImage} />
+      <div className={styles.handCardOverlay}>
+        <span className={styles.handCardOverlayName}>{tx?.name ?? card.name}</span>
+        <span className={styles.handCardOverlayPower}>{card.basePower}</span>
+      </div>
+    </>
+  : <>
                               <div className={styles.handCardGlow} />
                               <div className={styles.handCardTop}>
                                 <span className={styles.handCardName}>{tx?.name ?? card.name}</span>
