@@ -363,6 +363,8 @@ phase === "resolution" ? (
         </>
     }
   </div>
+) : null}
+                    </div>
                     <span className={styles.dualistLabel}>{t.dualist}</span>
                   </div>
                   {oppSpells.map(spell => {
