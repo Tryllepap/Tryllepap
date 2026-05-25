@@ -31,7 +31,6 @@ export default function GamePage() {
 
   const t = translations[locale];
 
-  // RPS
   const [rpsPhase, setRpsPhase] = useState<"choosing" | "waiting" | "revealing" | "done">("choosing");
   const [rpsMyChoice, setRpsMyChoice] = useState<RpsChoice | null>(null);
   const [rpsOppChoice, setRpsOppChoice] = useState<RpsChoice | null>(null);
@@ -39,22 +38,18 @@ export default function GamePage() {
   const [rpsCountdown, setRpsCountdown] = useState<number | null>(null);
   const acknowledgedRps = useRef(false);
 
-  // Drag
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragOverDualist, setDragOverDualist] = useState(false);
   const [dragOverMyBoard, setDragOverMyBoard] = useState(false);
 
-  // Placed spells
   const [placedSpells, setPlacedSpells] = useState<PlacedSpell[]>([]);
   const [inspectSpell, setInspectSpell] = useState<PlacedSpell | null>(null);
 
-  // Log resize
   const [logWidth, setLogWidth] = useState(200);
   const logResizing = useRef(false);
   const logResizeStart = useRef(0);
   const logWidthStart = useRef(200);
 
-  // Inspector resize
   const [inspectorWidth, setInspectorWidth] = useState(240);
   const inspResizing = useRef(false);
   const inspResizeStart = useRef(0);
@@ -131,7 +126,6 @@ export default function GamePage() {
     return () => { getPusherClient().unsubscribe(`game-${id}`); };
   }, [id, rpsPhase, runRpsReveal]);
 
-  // Resize listeners
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (logResizing.current) setLogWidth(Math.max(120, Math.min(360, logWidthStart.current + (e.clientX - logResizeStart.current))));
@@ -225,7 +219,6 @@ export default function GamePage() {
         <div className={styles.ambientOrb3} />
       </div>
 
-      {/* ── Score Bar ── */}
       <header className={styles.scoreBar}>
         <div className={styles.playerScore}>
           <span className={styles.playerScoreName}>{opponent.username}</span>
@@ -244,8 +237,6 @@ export default function GamePage() {
           </div>
           <span className={styles.playerScoreName}>{t.you}</span>
         </div>
-
-        {/* Language toggle */}
         <button
           className={styles.langToggle}
           onClick={() => setLocale(l => l === "en" ? "da" : "en")}
@@ -256,7 +247,6 @@ export default function GamePage() {
         </button>
       </header>
 
-      {/* ── Three column layout ── */}
       <div
         className={styles.gameLayout}
         style={{ gridTemplateColumns: `${logWidth}px 1fr ${inspectorWidth}px` }}
@@ -283,7 +273,7 @@ export default function GamePage() {
         {/* Battlefield */}
         <div className={styles.battlefield}>
 
-          {/* ── RPS ── */}
+          {/* RPS */}
           {phase === "rps" && (
             <div className={styles.rpsContainer}>
               <div className={styles.rpsOpponent}>
@@ -332,11 +322,11 @@ export default function GamePage() {
             </div>
           )}
 
-          {/* ── Playing field ── */}
+          {/* Playing field */}
           {(phase === "playing" || phase === "resolution") && (
             <div className={styles.field}>
 
-              {/* ══ OPPONENT HALF ══ */}
+              {/* OPPONENT HALF */}
               <div className={styles.oppHalf}>
                 <div className={styles.oppHandRow}>
                   {opponent.hand.map((_, i) => (
@@ -351,19 +341,23 @@ export default function GamePage() {
                 <div className={styles.oppBoard}>
                   <div className={styles.dualistAnchor}>
                     <div className={`${styles.dualistSlot} ${opponent.dualist ? styles.dualistSlotFilled : ""}`}>
-                      {opponent.dualist ? (
-phase === "resolution" ? (
-  <div className={styles.dsInner}>
-    {CARD_MAP[opponent.dualist]?.image
-      ? <img src={CARD_MAP[opponent.dualist].image} alt={cardName(opponent.dualist)} className={styles.dsImage} />
-      : <>
-          <span className={styles.dsSuit}>♦</span>
-          <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
-          <span className={styles.dsPower}>{opponent.dualistPower}</span>
-        </>
-    }
-  </div>
-) : null}
+                      {opponent.dualist && phase === "resolution" ? (
+                        <div className={styles.dsInner}>
+                          {CARD_MAP[opponent.dualist]?.image
+                            ? <img src={CARD_MAP[opponent.dualist].image} alt={cardName(opponent.dualist)} className={styles.dsImage} />
+                            : <>
+                                <span className={styles.dsSuit}>♦</span>
+                                <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
+                                <span className={styles.dsPower}>{opponent.dualistPower}</span>
+                              </>
+                          }
+                        </div>
+                      ) : opponent.dualist ? (
+                        <div className={styles.dsInner}>
+                          <span className={styles.dsSuit}>♦</span>
+                          <span className={styles.dsName}>?</span>
+                        </div>
+                      ) : null}
                     </div>
                     <span className={styles.dualistLabel}>{t.dualist}</span>
                   </div>
@@ -377,17 +371,17 @@ phase === "resolution" ? (
                         style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
                         onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
                       >
-{card?.image
-  ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
-  : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
-}
+                        {card?.image
+                          ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
+                          : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
+                        }
                       </div>
                     );
                   })}
                 </div>
               </div>
 
-              {/* ══ DIVIDER ══ */}
+              {/* DIVIDER */}
               <div className={styles.fieldDivider}>
                 <div className={styles.dividerLine} />
                 <div className={`${styles.turnBadge} ${isMyTurn ? styles.turnBadgeMine : styles.turnBadgeOpp}`}>
@@ -398,7 +392,7 @@ phase === "resolution" ? (
                 <div className={styles.dividerLine} />
               </div>
 
-              {/* ══ MY HALF ══ */}
+              {/* MY HALF */}
               <div className={styles.myHalf}>
                 <div
                   ref={myBoardRef}
@@ -416,14 +410,12 @@ phase === "resolution" ? (
                     handlePlaySpell(selectedCard, x, y);
                   }}
                 >
-                  {/* Board hint */}
                   {isMyTurn && phase === "playing" && mySpells.length === 0 && !me.dualist && (
                     <div className={styles.boardHint}>
                       <span>{dragOverMyBoard ? t.dragHintOver : t.dragHint}</span>
                     </div>
                   )}
 
-                  {/* My dualist */}
                   <div className={styles.dualistAnchor}>
                     <span className={styles.dualistLabel}>{t.yourDualist}</span>
                     <div
@@ -441,18 +433,18 @@ phase === "resolution" ? (
                         if (selectedCard && isMyTurn && !me.dualist && phase === "playing") handlePlaceDualist(selectedCard);
                       }}
                     >
-{me.dualist ? (
-  <div className={styles.dsInner}>
-    {CARD_MAP[me.dualist]?.image
-      ? <img src={CARD_MAP[me.dualist].image} alt={cardName(me.dualist)} className={styles.dsImage} />
-      : <>
-          <span className={styles.dsSuit}>♦</span>
-          <span className={styles.dsName}>{cardName(me.dualist)}</span>
-          <span className={styles.dsPower}>{me.dualistPower}</span>
-          <span className={styles.dsEffect}>{cardTranslations[me.dualist]?.[locale]?.dualistDescription ?? CARD_MAP[me.dualist]?.dualistDescription}</span>
-        </>
-    }
-  </div>
+                      {me.dualist ? (
+                        <div className={styles.dsInner}>
+                          {CARD_MAP[me.dualist]?.image
+                            ? <img src={CARD_MAP[me.dualist].image} alt={cardName(me.dualist)} className={styles.dsImage} />
+                            : <>
+                                <span className={styles.dsSuit}>♦</span>
+                                <span className={styles.dsName}>{cardName(me.dualist)}</span>
+                                <span className={styles.dsPower}>{me.dualistPower}</span>
+                                <span className={styles.dsEffect}>{cardTranslations[me.dualist]?.[locale]?.dualistDescription ?? CARD_MAP[me.dualist]?.dualistDescription}</span>
+                              </>
+                          }
+                        </div>
                       ) : (
                         <div className={styles.dsInner}>
                           <span className={styles.dsEmpty}>
@@ -470,7 +462,6 @@ phase === "resolution" ? (
                     {me.hasPassed && <span className={styles.passedBadge}>{t.passed}</span>}
                   </div>
 
-                  {/* My spells */}
                   {mySpells.map(spell => {
                     const card = CARD_MAP[spell.cardId];
                     const isInspected = inspectSpell?.instanceId === spell.instanceId;
@@ -488,7 +479,6 @@ phase === "resolution" ? (
                   })}
                 </div>
 
-                {/* My name + action buttons */}
                 <div className={styles.playerNameRow}>
                   <span className={styles.fieldPlayerName}>{t.you}</span>
                   {isMyTurn && phase === "playing" && (
@@ -504,7 +494,6 @@ phase === "resolution" ? (
                   )}
                 </div>
 
-                {/* My hand */}
                 <div className={styles.myHand}>
                   {me.hand.map((cardId, i) => {
                     const card = CARD_MAP[cardId];
@@ -527,34 +516,34 @@ phase === "resolution" ? (
                           if (!disabled) setSelectedCard(isSelected ? null : cardId);
                         }}
                       >
-{card.image
-  ? <img src={card.image} alt={card.name} className={styles.handCardImage} />
-  : <>
-      <div className={styles.handCardGlow} />
-      <div className={styles.handCardTop}>
-        <span className={styles.handCardName}>{tx?.name ?? card.name}</span>
-        <span className={styles.handCardPower}>{card.basePower}</span>
-      </div>
-      <div className={styles.handCardSuit}>♦</div>
-      <div className={styles.handCardBottom}>
-        <div className={styles.handCardEffectRow}>
-          <span className={styles.handCardEffectTag}>{card.isInstant ? t.instant : "Spell"}</span>
-          <span className={styles.handCardEffectDesc}>{tx?.spellDescription ?? card.spellDescription}</span>
-        </div>
-        <div className={styles.handCardEffectRow}>
-          <span className={styles.handCardEffectTag}>{card.isFlipEffect ? t.flipEffect : "Dualist"}</span>
-          <span className={styles.handCardEffectDesc}>{tx?.dualistDescription ?? card.dualistDescription}</span>
-        </div>
-      </div>
-      {card.categories.length > 0 && (
-        <div className={styles.handCardCategories}>
-          {(tx?.categories ?? card.categories).map(cat => (
-            <span key={cat} className={styles.categoryTag}>{cat}</span>
-          ))}
-        </div>
-      )}
-    </>
-}
+                        {card.image
+                          ? <img src={card.image} alt={card.name} className={styles.handCardImage} />
+                          : <>
+                              <div className={styles.handCardGlow} />
+                              <div className={styles.handCardTop}>
+                                <span className={styles.handCardName}>{tx?.name ?? card.name}</span>
+                                <span className={styles.handCardPower}>{card.basePower}</span>
+                              </div>
+                              <div className={styles.handCardSuit}>♦</div>
+                              <div className={styles.handCardBottom}>
+                                <div className={styles.handCardEffectRow}>
+                                  <span className={styles.handCardEffectTag}>{card.isInstant ? t.instant : "Spell"}</span>
+                                  <span className={styles.handCardEffectDesc}>{tx?.spellDescription ?? card.spellDescription}</span>
+                                </div>
+                                <div className={styles.handCardEffectRow}>
+                                  <span className={styles.handCardEffectTag}>{card.isFlipEffect ? t.flipEffect : "Dualist"}</span>
+                                  <span className={styles.handCardEffectDesc}>{tx?.dualistDescription ?? card.dualistDescription}</span>
+                                </div>
+                              </div>
+                              {card.categories.length > 0 && (
+                                <div className={styles.handCardCategories}>
+                                  {(tx?.categories ?? card.categories).map(cat => (
+                                    <span key={cat} className={styles.categoryTag}>{cat}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                        }
                       </div>
                     );
                   })}
@@ -613,12 +602,14 @@ phase === "resolution" ? (
           />
           {inspectedCardDef ? (
             <div className={styles.inspectorCard}>
-             <div className={styles.inspectorImageSlot}>
-  {inspectedCardDef.image
-    ? <img src={inspectedCardDef.image} alt={inspectedCardTx?.name ?? inspectedCardDef.name} className={styles.inspectorImage} />
-    : <><span className={styles.inspectorImagePlaceholder}>{(inspectedCardTx?.name ?? inspectedCardDef.name)[0]}</span>
-        <span className={styles.inspectorImageNote}>{t.cardArtSoon}</span></>
-  }
+              <div className={styles.inspectorImageSlot}>
+                {inspectedCardDef.image
+                  ? <img src={inspectedCardDef.image} alt={inspectedCardTx?.name ?? inspectedCardDef.name} className={styles.inspectorImage} />
+                  : <>
+                      <span className={styles.inspectorImagePlaceholder}>{(inspectedCardTx?.name ?? inspectedCardDef.name)[0]}</span>
+                      <span className={styles.inspectorImageNote}>{t.cardArtSoon}</span>
+                    </>
+                }
               </div>
               <div className={styles.inspectorBody}>
                 <div className={styles.inspectorHeader}>
