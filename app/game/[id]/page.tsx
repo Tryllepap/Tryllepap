@@ -5,11 +5,11 @@ import { useRouter, useParams } from "next/navigation";
 import { getPusherClient } from "@/lib/pusher";
 import { GameState } from "@/lib/game/state";
 import { CARD_MAP } from "@/lib/game/cards";
+import { translations, cardTranslations, Locale } from "@/lib/i18n";
 import styles from "./game.module.css";
 
 type RpsChoice = "rock" | "paper" | "scissors";
 const RPS_EMOJI: Record<RpsChoice, string> = { rock: "🪨", paper: "📄", scissors: "✂️" };
-const RPS_LABELS: Record<RpsChoice, string> = { rock: "Rock", paper: "Paper", scissors: "Scissors" };
 
 interface PlacedSpell {
   instanceId: string;
@@ -27,6 +27,9 @@ export default function GamePage() {
   const [inspectCard, setInspectCard] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [locale, setLocale] = useState<Locale>("en");
+
+  const t = translations[locale];
 
   // RPS
   const [rpsPhase, setRpsPhase] = useState<"choosing" | "waiting" | "revealing" | "done">("choosing");
@@ -187,7 +190,7 @@ export default function GamePage() {
       <main className={styles.main}>
         <div className={styles.loader}>
           <div className={styles.loaderCard}>✦</div>
-          <p>Loading game...</p>
+          <p>{t.loadingGame}</p>
         </div>
       </main>
     );
@@ -202,9 +205,17 @@ export default function GamePage() {
 
   const activeInspectCardId = inspectSpell ? inspectSpell.cardId : inspectCard;
   const inspectedCardDef = activeInspectCardId ? CARD_MAP[activeInspectCardId] : null;
+  const inspectedCardTx = activeInspectCardId ? cardTranslations[activeInspectCardId]?.[locale] : null;
 
   const mySpells = placedSpells.filter(s => s.playerId === myUsername);
   const oppSpells = placedSpells.filter(s => s.playerId !== myUsername);
+
+  const cardName = (cardId: string) =>
+    cardTranslations[cardId]?.[locale]?.name ?? CARD_MAP[cardId]?.name ?? cardId;
+
+  const rpsLabels: Record<RpsChoice, string> = {
+    rock: t.rock, paper: t.paper, scissors: t.scissors,
+  };
 
   return (
     <main className={styles.main}>
@@ -223,16 +234,26 @@ export default function GamePage() {
           </div>
         </div>
         <div className={styles.roundInfo}>
-          <span className={styles.roundLabel}>Round</span>
+          <span className={styles.roundLabel}>{t.round}</span>
           <span className={styles.roundNum}>{gameState.roundNumber}</span>
-          <span className={styles.roundLabel}>of 3</span>
+          <span className={styles.roundLabel}>{t.of} 3</span>
         </div>
         <div className={`${styles.playerScore} ${styles.playerScoreRight}`}>
           <div className={styles.roundPips}>
             {[0,1].map(i => <div key={i} className={`${styles.pip} ${i < me.roundsWon ? styles.pipFilled : ""}`} />)}
           </div>
-          <span className={styles.playerScoreName}>You</span>
+          <span className={styles.playerScoreName}>{t.you}</span>
         </div>
+
+        {/* Language toggle */}
+        <button
+          className={styles.langToggle}
+          onClick={() => setLocale(l => l === "en" ? "da" : "en")}
+          title={locale === "en" ? "Switch to Danish" : "Skift til engelsk"}
+          aria-label="Toggle language"
+        >
+          {locale === "en" ? "🇬🇧" : "🇩🇰"}
+        </button>
       </header>
 
       {/* ── Three column layout ── */}
@@ -242,7 +263,7 @@ export default function GamePage() {
       >
         {/* Log */}
         <aside className={styles.logPanel}>
-          <div className={styles.logHeader}><span className={styles.logTitle}>♠ Battle Log</span></div>
+          <div className={styles.logHeader}><span className={styles.logTitle}>{t.battleLog}</span></div>
           <div className={styles.logScroll}>
             {gameState.eventLog.map((entry, i) => (
               <p key={i} className={`${styles.logLine} ${i === gameState.eventLog.length - 1 ? styles.logLineLatest : ""}`}>{entry}</p>
@@ -274,7 +295,7 @@ export default function GamePage() {
                     ? <span className={styles.rpsEmojiHidden}>✊</span>
                     : <span className={styles.rpsEmojiWaiting}>···</span>}
                 </div>
-                <p className={styles.rpsStatusText}>{opponent.rpsChoice ? "Ready!" : "Choosing..."}</p>
+                <p className={styles.rpsStatusText}>{opponent.rpsChoice ? t.ready : t.choosing}</p>
               </div>
               <div className={styles.rpsCenter}>
                 {rpsPhase === "revealing" && rpsCountdown !== null && rpsCountdown > 0
@@ -282,10 +303,10 @@ export default function GamePage() {
                   : rpsPhase === "done"
                   ? <div className={styles.rpsResultBanner}>
                       {rpsWinner === "draw"
-                        ? <span className={styles.rpsDrawText}>DRAW!</span>
+                        ? <span className={styles.rpsDrawText}>{t.draw}</span>
                         : rpsWinner === myUsername
-                        ? <span className={styles.rpsWinText}>YOU WIN!</span>
-                        : <span className={styles.rpsLoseText}>THEY WIN!</span>}
+                        ? <span className={styles.rpsWinText}>{t.youWin}</span>
+                        : <span className={styles.rpsLoseText}>{t.theyWin}</span>}
                     </div>
                   : <div className={styles.rpsVs}>VS</div>}
               </div>
@@ -300,13 +321,13 @@ export default function GamePage() {
                     {(["rock","paper","scissors"] as RpsChoice[]).map(c => (
                       <button key={c} className={styles.rpsBtn} onClick={() => handleRpsClick(c)}>
                         <span className={styles.rpsBtnEmoji}>{RPS_EMOJI[c]}</span>
-                        <span className={styles.rpsBtnLabel}>{RPS_LABELS[c]}</span>
+                        <span className={styles.rpsBtnLabel}>{rpsLabels[c]}</span>
                       </button>
                     ))}
                   </div>
                 )}
-                {rpsPhase === "waiting" && <p className={styles.rpsWaitText}>Waiting for opponent...</p>}
-                <p className={styles.rpsPlayerLabel}>You</p>
+                {rpsPhase === "waiting" && <p className={styles.rpsWaitText}>{t.waitingForOpponent}</p>}
+                <p className={styles.rpsPlayerLabel}>{t.you}</p>
               </div>
             </div>
           )}
@@ -317,43 +338,33 @@ export default function GamePage() {
 
               {/* ══ OPPONENT HALF ══ */}
               <div className={styles.oppHalf}>
-                {/* Opponent hand — top center */}
                 <div className={styles.oppHandRow}>
                   {opponent.hand.map((_, i) => (
                     <div key={i} className={styles.oppHandCard}><span>♦</span></div>
                   ))}
-                  {opponent.hand.length === 0 && <span className={styles.emptyHandNote}>No cards</span>}
+                  {opponent.hand.length === 0 && <span className={styles.emptyHandNote}>{t.noCards}</span>}
                 </div>
-
-                {/* Opponent name */}
                 <div className={styles.playerNameRow}>
                   <span className={styles.fieldPlayerName}>{opponent.username}</span>
-                  {opponent.hasPassed && <span className={styles.passedBadge}>Passed</span>}
+                  {opponent.hasPassed && <span className={styles.passedBadge}>{t.passed}</span>}
                 </div>
-
-                {/* Opponent spell board — full width, takes remaining space */}
                 <div className={styles.oppBoard}>
-                  {/* Opponent dualist — centered */}
                   <div className={styles.dualistAnchor}>
                     <div className={`${styles.dualistSlot} ${opponent.dualist ? styles.dualistSlotFilled : ""}`}>
                       {opponent.dualist ? (
                         phase === "resolution" ? (
                           <div className={styles.dsInner}>
                             <span className={styles.dsSuit}>♦</span>
-                            <span className={styles.dsName}>{CARD_MAP[opponent.dualist]?.name}</span>
+                            <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
                             <span className={styles.dsPower}>{opponent.dualistPower}</span>
                           </div>
                         ) : (
-                          <div className={styles.dsInner}>
-                            <span className={styles.dsBack}>?</span>
-                          </div>
+                          <div className={styles.dsInner}><span className={styles.dsBack}>?</span></div>
                         )
                       ) : <span className={styles.dsEmpty}>—</span>}
                     </div>
-                    <span className={styles.dualistLabel}>Dualist</span>
+                    <span className={styles.dualistLabel}>{t.dualist}</span>
                   </div>
-
-                  {/* Opponent spells */}
                   {oppSpells.map(spell => {
                     const card = CARD_MAP[spell.cardId];
                     const isInspected = inspectSpell?.instanceId === spell.instanceId;
@@ -365,7 +376,7 @@ export default function GamePage() {
                         onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
                       >
                         <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
-                        <div className={styles.spellTokenLabel}>{card?.name}</div>
+                        <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
                       </div>
                     );
                   })}
@@ -376,16 +387,15 @@ export default function GamePage() {
               <div className={styles.fieldDivider}>
                 <div className={styles.dividerLine} />
                 <div className={`${styles.turnBadge} ${isMyTurn ? styles.turnBadgeMine : styles.turnBadgeOpp}`}>
-                  {phase === "resolution" ? "⚔ Resolving"
-                    : isMyTurn ? "Your Turn"
-                    : `${opponent.username}'s Turn`}
+                  {phase === "resolution" ? t.resolving
+                    : isMyTurn ? t.yourTurn
+                    : `${opponent.username}${t.sTurn}`}
                 </div>
                 <div className={styles.dividerLine} />
               </div>
 
               {/* ══ MY HALF ══ */}
               <div className={styles.myHalf}>
-                {/* My spell board — drop zone, fills space, dualist centered */}
                 <div
                   ref={myBoardRef}
                   className={`${styles.myBoard} ${dragOverMyBoard ? styles.myBoardOver : ""} ${isMyTurn && phase === "playing" ? styles.myBoardActive : ""}`}
@@ -405,13 +415,13 @@ export default function GamePage() {
                   {/* Board hint */}
                   {isMyTurn && phase === "playing" && mySpells.length === 0 && !me.dualist && (
                     <div className={styles.boardHint}>
-                      <span>{dragOverMyBoard ? "Release to cast spell" : "Drag cards here · click anywhere to cast spells"}</span>
+                      <span>{dragOverMyBoard ? t.dragHintOver : t.dragHint}</span>
                     </div>
                   )}
 
-                  {/* My dualist — centered */}
+                  {/* My dualist */}
                   <div className={styles.dualistAnchor}>
-                    <span className={styles.dualistLabel}>Your Dualist</span>
+                    <span className={styles.dualistLabel}>{t.yourDualist}</span>
                     <div
                       className={`
                         ${styles.dualistSlot}
@@ -430,9 +440,9 @@ export default function GamePage() {
                       {me.dualist ? (
                         <div className={styles.dsInner}>
                           <span className={styles.dsSuit}>♦</span>
-                          <span className={styles.dsName}>{CARD_MAP[me.dualist]?.name}</span>
+                          <span className={styles.dsName}>{cardName(me.dualist)}</span>
                           <span className={styles.dsPower}>{me.dualistPower}</span>
-                          <span className={styles.dsEffect}>{CARD_MAP[me.dualist]?.dualistDescription}</span>
+                          <span className={styles.dsEffect}>{cardTranslations[me.dualist]?.[locale]?.dualistDescription ?? CARD_MAP[me.dualist]?.dualistDescription}</span>
                         </div>
                       ) : (
                         <div className={styles.dsInner}>
@@ -443,12 +453,12 @@ export default function GamePage() {
                               : "♦"}
                           </span>
                           <span className={styles.dsHint}>
-                            {isMyTurn && phase === "playing" ? "Dualist slot" : ""}
+                            {isMyTurn && phase === "playing" ? t.yourDualist : ""}
                           </span>
                         </div>
                       )}
                     </div>
-                    {me.hasPassed && <span className={styles.passedBadge}>Passed</span>}
+                    {me.hasPassed && <span className={styles.passedBadge}>{t.passed}</span>}
                   </div>
 
                   {/* My spells */}
@@ -463,7 +473,7 @@ export default function GamePage() {
                         onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
                       >
                         <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
-                        <div className={styles.spellTokenLabel}>{card?.name}</div>
+                        <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
                       </div>
                     );
                   })}
@@ -471,25 +481,26 @@ export default function GamePage() {
 
                 {/* My name + action buttons */}
                 <div className={styles.playerNameRow}>
-                  <span className={styles.fieldPlayerName}>You</span>
+                  <span className={styles.fieldPlayerName}>{t.you}</span>
                   {isMyTurn && phase === "playing" && (
                     <div className={styles.actionBtns}>
                       {selectedCard && !me.dualist && (
-                        <button className={styles.dualistBtn} onClick={() => handlePlaceDualist(selectedCard)}>⚔ Dualist</button>
+                        <button className={styles.dualistBtn} onClick={() => handlePlaceDualist(selectedCard)}>{t.dualistBtn}</button>
                       )}
                       {selectedCard && (
-                        <button className={styles.spellBtn} onClick={() => handlePlaySpell(selectedCard)}>✦ Spell</button>
+                        <button className={styles.spellBtn} onClick={() => handlePlaySpell(selectedCard)}>{t.spellBtn}</button>
                       )}
-                      <button className={styles.passBtn} onClick={() => sendAction("pass")}>Pass</button>
+                      <button className={styles.passBtn} onClick={() => sendAction("pass")}>{t.passBtn}</button>
                     </div>
                   )}
                 </div>
 
-                {/* My hand — bottom center */}
+                {/* My hand */}
                 <div className={styles.myHand}>
                   {me.hand.map((cardId, i) => {
                     const card = CARD_MAP[cardId];
                     if (!card) return null;
+                    const tx = cardTranslations[cardId]?.[locale];
                     const isSelected = selectedCard === cardId;
                     const isInspected = inspectCard === cardId;
                     const disabled = !isMyTurn || phase !== "playing";
@@ -509,24 +520,35 @@ export default function GamePage() {
                       >
                         <div className={styles.handCardGlow} />
                         <div className={styles.handCardTop}>
-                          <span className={styles.handCardName}>{card.name}</span>
+                          <span className={styles.handCardName}>{tx?.name ?? card.name}</span>
                           <span className={styles.handCardPower}>{card.basePower}</span>
                         </div>
                         <div className={styles.handCardSuit}>♦</div>
                         <div className={styles.handCardBottom}>
                           <div className={styles.handCardEffectRow}>
-                            <span className={styles.handCardEffectTag}>Spell</span>
-                            <span className={styles.handCardEffectDesc}>{card.spellDescription}</span>
+                            <span className={styles.handCardEffectTag}>
+                              {card.isInstant ? t.instant : "Spell"}
+                            </span>
+                            <span className={styles.handCardEffectDesc}>{tx?.spellDescription ?? card.spellDescription}</span>
                           </div>
                           <div className={styles.handCardEffectRow}>
-                            <span className={styles.handCardEffectTag}>Dualist</span>
-                            <span className={styles.handCardEffectDesc}>{card.dualistDescription}</span>
+                            <span className={styles.handCardEffectTag}>
+                              {card.isFlipEffect ? t.flipEffect : "Dualist"}
+                            </span>
+                            <span className={styles.handCardEffectDesc}>{tx?.dualistDescription ?? card.dualistDescription}</span>
                           </div>
                         </div>
+                        {card.categories.length > 0 && (
+                          <div className={styles.handCardCategories}>
+                            {(tx?.categories ?? card.categories).map(cat => (
+                              <span key={cat} className={styles.categoryTag}>{cat}</span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
-                  {me.hand.length === 0 && phase === "playing" && <p className={styles.emptyHand}>No cards in hand</p>}
+                  {me.hand.length === 0 && phase === "playing" && <p className={styles.emptyHand}>{t.noCards}</p>}
                 </div>
               </div>
             </div>
@@ -538,13 +560,13 @@ export default function GamePage() {
               <div className={styles.resultCard}>
                 <div className={styles.resultSuits}>♠ ♥ ♦ ♣</div>
                 <div className={styles.resultIcon}>{gameState.lastRoundWinner === myUsername ? "🏆" : gameState.lastRoundWinner === "draw" ? "🤝" : "💀"}</div>
-                <h2 className={styles.resultTitle}>{gameState.lastRoundWinner === myUsername ? "Round Victory!" : gameState.lastRoundWinner === "draw" ? "Round Draw" : "Round Lost"}</h2>
+                <h2 className={styles.resultTitle}>{gameState.lastRoundWinner === myUsername ? t.roundVictory : gameState.lastRoundWinner === "draw" ? t.roundDraw : t.roundLost}</h2>
                 <div className={styles.resultPowers}>
                   <div className={styles.resultPowerBox}><span className={styles.resultPowerName}>{me.username}</span><span className={styles.resultPowerValue}>{me.dualistPower}</span></div>
                   <span className={styles.resultPowerVs}>vs</span>
                   <div className={styles.resultPowerBox}><span className={styles.resultPowerName}>{opponent.username}</span><span className={styles.resultPowerValue}>{opponent.dualistPower}</span></div>
                 </div>
-                <button className={styles.nextRoundBtn} onClick={() => { sendAction("next_round"); setPlacedSpells([]); }}>Next Round →</button>
+                <button className={styles.nextRoundBtn} onClick={() => { sendAction("next_round"); setPlacedSpells([]); }}>{t.nextRound}</button>
               </div>
             </div>
           )}
@@ -555,14 +577,14 @@ export default function GamePage() {
               <div className={styles.resultCard}>
                 <div className={styles.resultSuits}>♠ ♥ ♦ ♣</div>
                 <div className={styles.resultIcon}>{gameState.matchWinner === myUsername ? "👑" : "💀"}</div>
-                <h2 className={styles.resultTitle}>{gameState.matchWinner === myUsername ? "Victory!" : "Defeat"}</h2>
-                <p className={styles.resultSubtitle}>{gameState.matchWinner === myUsername ? "You have mastered TryllePap!" : `${opponent.username} wins the match.`}</p>
+                <h2 className={styles.resultTitle}>{gameState.matchWinner === myUsername ? t.victory : t.defeat}</h2>
+                <p className={styles.resultSubtitle}>{gameState.matchWinner === myUsername ? t.masteredMsg : `${opponent.username} wins the match.`}</p>
                 <div className={styles.resultPowers}>
-                  <div className={styles.resultPowerBox}><span className={styles.resultPowerName}>{me.username}</span><span className={styles.resultPowerValue}>{me.roundsWon} rounds</span></div>
+                  <div className={styles.resultPowerBox}><span className={styles.resultPowerName}>{me.username}</span><span className={styles.resultPowerValue}>{me.roundsWon} {t.rounds}</span></div>
                   <span className={styles.resultPowerVs}>vs</span>
-                  <div className={styles.resultPowerBox}><span className={styles.resultPowerName}>{opponent.username}</span><span className={styles.resultPowerValue}>{opponent.roundsWon} rounds</span></div>
+                  <div className={styles.resultPowerBox}><span className={styles.resultPowerName}>{opponent.username}</span><span className={styles.resultPowerValue}>{opponent.roundsWon} {t.rounds}</span></div>
                 </div>
-                <button className={styles.nextRoundBtn} onClick={() => router.push("/lobby")}>Return to Hall</button>
+                <button className={styles.nextRoundBtn} onClick={() => router.push("/lobby")}>{t.returnToHall}</button>
               </div>
             </div>
           )}
@@ -582,39 +604,51 @@ export default function GamePage() {
           {inspectedCardDef ? (
             <div className={styles.inspectorCard}>
               <div className={styles.inspectorImageSlot}>
-                <span className={styles.inspectorImagePlaceholder}>{inspectedCardDef.name[0]}</span>
-                <span className={styles.inspectorImageNote}>Card art coming soon</span>
+                <span className={styles.inspectorImagePlaceholder}>{(inspectedCardTx?.name ?? inspectedCardDef.name)[0]}</span>
+                <span className={styles.inspectorImageNote}>{t.cardArtSoon}</span>
               </div>
               <div className={styles.inspectorBody}>
                 <div className={styles.inspectorHeader}>
-                  <h3 className={styles.inspectorName}>{inspectedCardDef.name}</h3>
+                  <h3 className={styles.inspectorName}>{inspectedCardTx?.name ?? inspectedCardDef.name}</h3>
                   <span className={styles.inspectorPower}>{inspectedCardDef.basePower}</span>
                 </div>
+                {inspectedCardDef.categories.length > 0 && (
+                  <div className={styles.inspectorCategories}>
+                    <span className={styles.inspectorCategoriesLabel}>{t.categories}:</span>
+                    {(inspectedCardTx?.categories ?? inspectedCardDef.categories).map(cat => (
+                      <span key={cat} className={styles.categoryTag}>{cat}</span>
+                    ))}
+                  </div>
+                )}
                 <div className={styles.inspectorDivider} />
                 <div className={styles.inspectorEffect}>
-                  <span className={styles.inspectorEffectLabel}>✦ Spell Effect</span>
-                  <p className={styles.inspectorEffectText}>{inspectedCardDef.spellDescription}</p>
+                  <span className={styles.inspectorEffectLabel}>
+                    {inspectedCardDef.isInstant ? `✦ ${t.instant}` : t.spellEffect}
+                  </span>
+                  <p className={styles.inspectorEffectText}>{inspectedCardTx?.spellDescription ?? inspectedCardDef.spellDescription}</p>
                 </div>
                 <div className={styles.inspectorEffect}>
-                  <span className={styles.inspectorEffectLabel}>⚔ Dualist Effect</span>
-                  <p className={styles.inspectorEffectText}>{inspectedCardDef.dualistDescription}</p>
+                  <span className={styles.inspectorEffectLabel}>
+                    {inspectedCardDef.isFlipEffect ? `⚔ ${t.flipEffect}` : t.dualistEffect}
+                  </span>
+                  <p className={styles.inspectorEffectText}>{inspectedCardTx?.dualistDescription ?? inspectedCardDef.dualistDescription}</p>
                 </div>
                 {isMyTurn && phase === "playing" && !inspectSpell && inspectCard && (
                   <div className={styles.inspectorActions}>
                     {!me.dualist && (
-                      <button className={styles.inspectorDualistBtn} onClick={() => handlePlaceDualist(inspectCard)}>Place as Dualist</button>
+                      <button className={styles.inspectorDualistBtn} onClick={() => handlePlaceDualist(inspectCard)}>{t.placeAsDualist}</button>
                     )}
-                    <button className={styles.inspectorSpellBtn} onClick={() => handlePlaySpell(inspectCard)}>Cast as Spell</button>
+                    <button className={styles.inspectorSpellBtn} onClick={() => handlePlaySpell(inspectCard)}>{t.castAsSpell}</button>
                   </div>
                 )}
-                {inspectSpell && <p className={styles.inspectorSpellNote}>Spell played on the board.</p>}
+                {inspectSpell && <p className={styles.inspectorSpellNote}>{t.spellPlayedNote}</p>}
               </div>
               <button className={styles.inspectorClose} onClick={() => { setInspectCard(null); setInspectSpell(null); }}>✕</button>
             </div>
           ) : (
             <div className={styles.inspectorEmpty}>
               <span className={styles.inspectorEmptyIcon}>♦</span>
-              <p>Click a card or<br />spell to inspect</p>
+              <p>{t.inspectHint.split("\n").map((line, i) => <span key={i}>{line}<br/></span>)}</p>
             </div>
           )}
         </aside>
