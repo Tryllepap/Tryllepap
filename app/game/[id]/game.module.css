@@ -327,13 +327,14 @@
 .handCardSuit { text-align: center; font-size: 0.9rem; color: var(--border-gold); opacity: 0.12; margin: 0.18rem 0; }
 /* Hand card — card-shaped image taking full card, with name overlay at bottom */
 .handCardImage {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  height: 100%;
   object-fit: cover;
   object-position: top center;
   display: block;
-  border-radius: 4px;
-  margin-bottom: 0.3rem;
+  border-radius: var(--radius);
 }
 
 /* Dualist slot image */
