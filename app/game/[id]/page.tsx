@@ -375,8 +375,10 @@ phase === "resolution" ? (
                         style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
                         onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
                       >
-                        <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
-                        <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
+{card?.image
+  ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
+  : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
+}
                       </div>
                     );
                   })}
