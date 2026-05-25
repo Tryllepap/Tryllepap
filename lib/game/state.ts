@@ -35,6 +35,8 @@ export interface GameState {
   lastRoundWinner: string | "draw" | null;
   rpsResult?: "draw" | string;
   rpsWinnerId?: string;
+  // Track who went first in the previous round so we can alternate
+  previousFirstPlayerId?: string;
 }
 
 export function createInitialState(
@@ -65,6 +67,7 @@ export function createInitialState(
     eventLog: ["Match started — play Rock, Paper, or Scissors to decide who goes first."],
     matchWinner: null,
     lastRoundWinner: null,
+    previousFirstPlayerId: undefined,
   };
 }
 
@@ -150,6 +153,7 @@ export function resetForNewRound(state: GameState, firstPlayerId: string): GameS
     phase: "playing",
     activePlayerId: firstPlayerId,
     lastRoundWinner: null,
+    previousFirstPlayerId: firstPlayerId,
     players: state.players.map(p => ({
       ...p,
       dualist: null,
