@@ -306,6 +306,7 @@
 
 .handCard {
   flex-shrink: 0; width: 100px;
+  min-height: 140px;
   background: linear-gradient(160deg, var(--surface-2), var(--surface));
   border: 1px solid var(--border); border-radius: var(--radius);
   padding: 0.55rem 0.5rem; cursor: pointer;
