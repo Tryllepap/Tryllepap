@@ -1,459 +1,372 @@
+/* ═══════════════════════════════════════════════════════════
+   TRYLLEPAP — GAME CSS
+   ═══════════════════════════════════════════════════════════ */
+
 .main {
-  min-height: 100dvh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background:
     radial-gradient(ellipse 120% 80% at 50% -10%, rgba(139,26,26,0.12) 0%, transparent 55%),
     radial-gradient(ellipse 80% 60% at 80% 80%, rgba(201,146,58,0.06) 0%, transparent 50%),
     var(--black);
-  position: relative;
   overflow: hidden;
+  position: relative;
 }
 
 .ambientBg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.ambientOrb1 {
-  position: absolute; width: 600px; height: 600px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(139,26,26,0.08) 0%, transparent 70%);
-  top: -200px; left: -100px; animation: orbFloat1 20s ease-in-out infinite;
-}
-.ambientOrb2 {
-  position: absolute; width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,146,58,0.06) 0%, transparent 70%);
-  bottom: -150px; right: -100px; animation: orbFloat2 25s ease-in-out infinite;
-}
-.ambientOrb3 {
-  position: absolute; width: 400px; height: 400px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(26,60,139,0.05) 0%, transparent 70%);
-  top: 40%; left: 40%; animation: orbFloat3 18s ease-in-out infinite;
-}
+.ambientOrb1 { position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(139,26,26,0.08) 0%, transparent 70%); top: -200px; left: -100px; animation: orbFloat1 20s ease-in-out infinite; }
+.ambientOrb2 { position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(201,146,58,0.06) 0%, transparent 70%); bottom: -150px; right: -100px; animation: orbFloat2 25s ease-in-out infinite; }
+.ambientOrb3 { position: absolute; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(26,60,139,0.05) 0%, transparent 70%); top: 40%; left: 40%; animation: orbFloat3 18s ease-in-out infinite; }
 @keyframes orbFloat1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
 @keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,-60px)} }
 @keyframes orbFloat3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.2)} }
 
-.loader {
-  position: fixed; inset: 0; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 1rem;
-  color: var(--text-muted); font-style: italic; z-index: 10;
-}
-.loaderCard {
-  width: 60px; height: 60px; border: 1px solid var(--border-gold); border-radius: var(--radius);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; color: var(--gold); animation: pulse 1.5s ease-in-out infinite;
-}
+.loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--text-muted); font-style: italic; z-index: 10; }
+.loaderCard { width: 60px; height: 60px; border: 1px solid var(--border-gold); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--gold); animation: pulse 1.5s ease-in-out infinite; }
 
-/* ══ Score Bar ══════════════════════════════════════════════════ */
+/* ═══ Score Bar ═══════════════════════════════════════════ */
 .scoreBar {
-  position: relative; z-index: 10;
+  position: relative; z-index: 10; flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0.6rem 1.5rem;
-  background: rgba(10,8,6,0.9); border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(10px); flex-shrink: 0;
+  padding: 0.5rem 1.5rem;
+  background: rgba(10,8,6,0.92); border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
 }
 .playerScore { display: flex; align-items: center; gap: 0.8rem; }
 .playerScoreRight { flex-direction: row-reverse; }
-.playerScoreName { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
-.roundPips { display: flex; gap: 6px; }
-.pip { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--border-gold); background: transparent; transition: background 0.3s, box-shadow 0.3s; }
+.playerScoreName { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+.roundPips { display: flex; gap: 5px; }
+.pip { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--border-gold); transition: background 0.3s, box-shadow 0.3s; }
 .pipFilled { background: var(--gold); box-shadow: 0 0 8px rgba(201,146,58,0.6); }
 .roundInfo { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-display); }
-.roundLabel { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-faint); }
-.roundNum { font-size: 1.4rem; font-weight: 900; color: var(--gold-light); line-height: 1; }
+.roundLabel { font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-faint); }
+.roundNum { font-size: 1.3rem; font-weight: 900; color: var(--gold-light); line-height: 1; }
 
-/* ══ Layout ═════════════════════════════════════════════════════ */
+/* ═══ Three-column layout ═════════════════════════════════ */
 .gameLayout {
-  position: relative; z-index: 1; flex: 1;
+  position: relative; z-index: 1;
+  flex: 1; min-height: 0;
   display: grid;
-  /* columns set inline via style prop for resizability */
-  grid-template-columns: 220px 1fr 260px;
-  min-height: 0; overflow: hidden;
+  overflow: hidden;
 }
 
-/* ══ Resize handles ══════════════════════════════════════════════ */
+/* ═══ Resize handles ══════════════════════════════════════ */
 .resizeHandleRight {
   position: absolute; top: 0; right: 0; width: 5px; height: 100%;
   cursor: col-resize; z-index: 20;
-  background: transparent;
   transition: background 0.2s;
 }
-.resizeHandleRight:hover { background: rgba(201,146,58,0.3); }
-
+.resizeHandleRight:hover { background: rgba(201,146,58,0.25); }
 .resizeHandleLeft {
   position: absolute; top: 0; left: 0; width: 5px; height: 100%;
   cursor: col-resize; z-index: 20;
-  background: transparent;
   transition: background 0.2s;
 }
-.resizeHandleLeft:hover { background: rgba(201,146,58,0.3); }
+.resizeHandleLeft:hover { background: rgba(201,146,58,0.25); }
 
-/* ══ Log Panel ══════════════════════════════════════════════════ */
+/* ═══ Log Panel ═══════════════════════════════════════════ */
 .logPanel {
-  position: relative;
-  display: flex; flex-direction: column;
+  position: relative; display: flex; flex-direction: column;
   border-right: 1px solid var(--border);
-  background: rgba(10,8,6,0.6);
-  backdrop-filter: blur(8px);
-  overflow: hidden;
-  min-width: 120px;
+  background: rgba(10,8,6,0.65); backdrop-filter: blur(8px);
+  overflow: hidden; min-width: 120px;
 }
-.logHeader { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.logTitle { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-faint); }
+.logHeader { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.logTitle { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-faint); }
 .logScroll {
-  flex: 1; overflow-y: auto; padding: 0.8rem;
-  display: flex; flex-direction: column; gap: 0.4rem;
-  /* Scroll is contained — doesn't affect rest of page */
+  flex: 1; overflow-y: auto; padding: 0.7rem;
+  display: flex; flex-direction: column; gap: 0.35rem;
 }
 .logScroll::-webkit-scrollbar { width: 3px; }
 .logScroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.logLine { font-size: 0.72rem; color: var(--text-faint); line-height: 1.5; font-style: italic; border-bottom: 1px solid rgba(61,48,32,0.3); padding-bottom: 0.4rem; }
+.logLine { font-size: 0.7rem; color: var(--text-faint); line-height: 1.5; font-style: italic; border-bottom: 1px solid rgba(61,48,32,0.25); padding-bottom: 0.35rem; }
 .logLineLatest { color: var(--text-muted); font-style: normal; font-weight: 500; }
 
-/* ══ Battlefield ════════════════════════════════════════════════ */
+/* ═══ Battlefield ═════════════════════════════════════════ */
 .battlefield {
   display: flex; flex-direction: column;
   overflow: hidden; position: relative;
 }
 
-/* ══ RPS ════════════════════════════════════════════════════════ */
-.rpsContainer {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: space-around;
-  gap: 1rem; padding: 2rem;
-}
-.rpsOpponent, .rpsMine { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; width: 100%; }
-.rpsPlayerLabel { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-faint); }
-.rpsChoiceDisplay {
-  width: 120px; height: 120px; border: 2px solid var(--border);
-  border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center;
-  background: var(--surface); transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
-}
+/* ═══ RPS ═════════════════════════════════════════════════ */
+.rpsContainer { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 2rem; gap: 0.5rem; }
+.rpsOpponent, .rpsMine { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; }
+.rpsPlayerLabel { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-faint); }
+.rpsChoiceDisplay { width: 110px; height: 110px; border: 2px solid var(--border); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; background: var(--surface); transition: all 0.3s; }
 .rpsChoiceSelected { border-color: var(--gold); box-shadow: var(--glow-gold); transform: scale(1.05); }
 .rpsChoiceRevealed { border-color: var(--crimson); box-shadow: 0 0 20px rgba(139,26,26,0.4); animation: rpsReveal 0.5s cubic-bezier(0.34,1.56,0.64,1); }
-@keyframes rpsReveal { from{transform:rotateY(90deg) scale(0.8);opacity:0} to{transform:rotateY(0deg) scale(1);opacity:1} }
-.rpsEmoji { font-size: 3rem; animation: rpsPop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-.rpsEmojiHidden { font-size: 2.5rem; }
-.rpsEmojiWaiting { font-size: 1.5rem; color: var(--text-faint); animation: pulse 1.5s ease-in-out infinite; }
-@keyframes rpsPop { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
-.rpsStatusText { font-size: 0.75rem; font-style: italic; color: var(--text-faint); }
-.rpsCenter { display: flex; align-items: center; justify-content: center; min-height: 80px; }
-.rpsVs { font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; color: var(--border-gold); letter-spacing: 0.2em; opacity: 0.4; }
+@keyframes rpsReveal { from{transform:rotateY(90deg) scale(0.8);opacity:0} to{transform:rotateY(0) scale(1);opacity:1} }
+.rpsEmoji { font-size: 2.8rem; animation: rpsPop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.rpsEmojiHidden { font-size: 2.4rem; }
+.rpsEmojiWaiting { font-size: 1.4rem; color: var(--text-faint); animation: pulse 1.5s ease-in-out infinite; }
+@keyframes rpsPop { from{transform:scale(0.4);opacity:0} to{transform:scale(1);opacity:1} }
+.rpsStatusText { font-size: 0.72rem; font-style: italic; color: var(--text-faint); }
+.rpsCenter { display: flex; align-items: center; justify-content: center; height: 80px; }
+.rpsVs { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: var(--border-gold); letter-spacing: 0.2em; opacity: 0.4; }
 .rpsCountdown { font-family: var(--font-display); font-size: 5rem; font-weight: 900; color: var(--gold); text-shadow: 0 0 40px rgba(201,146,58,0.7); animation: countdownPop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes countdownPop { from{transform:scale(2.5);opacity:0} to{transform:scale(1);opacity:1} }
 .rpsResultBanner { animation: resultSlide 0.5s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes resultSlide { from{transform:translateY(-20px) scale(0.8);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
-.rpsWinText { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; letter-spacing: 0.1em; background: linear-gradient(135deg, var(--gold), var(--gold-shine)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.rpsLoseText { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; letter-spacing: 0.1em; color: var(--crimson); }
-.rpsDrawText { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; letter-spacing: 0.1em; color: var(--text-muted); }
-.rpsButtons { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
-.rpsBtn { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border-gold); border-radius: var(--radius); padding: 1rem 1.4rem; cursor: pointer; color: var(--text); transition: background 0.2s, transform 0.15s, box-shadow 0.2s; min-width: 80px; }
+.rpsWinText { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; letter-spacing: 0.1em; background: linear-gradient(135deg, var(--gold), var(--gold-shine)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.rpsLoseText { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; letter-spacing: 0.1em; color: var(--crimson); }
+.rpsDrawText { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; letter-spacing: 0.1em; color: var(--text-muted); }
+.rpsButtons { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
+.rpsBtn { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; background: var(--surface); border: 1px solid var(--border-gold); border-radius: var(--radius); padding: 0.9rem 1.2rem; cursor: pointer; color: var(--text); transition: all 0.2s; min-width: 76px; }
 .rpsBtn:hover { background: var(--surface-2); transform: translateY(-4px); box-shadow: var(--glow-gold); }
-.rpsBtnEmoji { font-size: 2rem; }
-.rpsBtnLabel { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
-.rpsWaitText { font-style: italic; font-size: 0.82rem; color: var(--text-faint); animation: pulse 2s ease-in-out infinite; }
+.rpsBtnEmoji { font-size: 1.8rem; }
+.rpsBtnLabel { font-family: var(--font-display); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+.rpsWaitText { font-style: italic; font-size: 0.8rem; color: var(--text-faint); animation: pulse 2s ease-in-out infinite; }
 
-/* ══ Play Area ══════════════════════════════════════════════════ */
-.playArea {
-  flex: 1; display: flex; flex-direction: column;
-  padding: 0.8rem 1.2rem; gap: 0.6rem; overflow: hidden;
+/* ═══ Split Field ═════════════════════════════════════════ */
+.field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* Opponent strip */
-.opponentStrip {
-  display: flex; align-items: center; gap: 1rem; flex-shrink: 0;
-  background: rgba(10,8,6,0.4); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 0.6rem 1rem;
+/* ── Opponent half — exactly 50% of field height ── */
+.oppHalf {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1rem 0;
+  gap: 0.3rem;
 }
-.opponentInfo { display: flex; flex-direction: column; gap: 0.2rem; min-width: 80px; }
-.stripLabel { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
-.opponentHandRow { display: flex; gap: 0.3rem; flex-wrap: wrap; flex: 1; align-items: center; min-height: 44px; }
-.opponentCard { width: 32px; height: 44px; border-radius: 3px; border: 1px solid var(--border-gold); background: linear-gradient(135deg, var(--surface-3), var(--surface-2)); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
-.opponentCard:hover { transform: translateY(-2px); }
-.opponentCardInner { font-size: 0.7rem; color: var(--border-gold); opacity: 0.5; }
-.emptyHandNote { font-size: 0.7rem; color: var(--text-faint); font-style: italic; }
 
-/* Opponent dualist */
-.opponentDualistSlot { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; flex-shrink: 0; }
-.dualistSlotLabel { font-family: var(--font-display); font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
-
-/* Card-shaped dualist slot */
-.dualistCard {
-  width: 72px; height: 100px;
-  border-radius: 6px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
-  position: relative; overflow: hidden;
+.oppHandRow {
+  display: flex; gap: 0.3rem; justify-content: center;
+  flex-wrap: wrap; flex-shrink: 0;
 }
-.dualistCardEmpty {
-  border: 2px dashed var(--border);
-  background: transparent;
+.oppHandCard {
+  width: 30px; height: 42px; border-radius: 3px;
+  border: 1px solid var(--border-gold);
+  background: linear-gradient(135deg, var(--surface-3), var(--surface-2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; color: var(--border-gold); opacity: 0.55;
+  transition: transform 0.15s;
+  flex-shrink: 0;
 }
-.dualistCardFilled {
-  border: 2px solid var(--border-gold);
-  background: linear-gradient(160deg, var(--surface-2), var(--surface));
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 12px rgba(201,146,58,0.1);
+.oppHandCard:hover { transform: translateY(-2px); }
+.emptyHandNote { font-size: 0.65rem; color: var(--text-faint); font-style: italic; }
+
+.playerNameRow {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.6rem; flex-shrink: 0;
 }
-.dualistCardActive { border-color: var(--text-faint); cursor: pointer; }
-.dualistCardActive:hover { border-color: var(--gold); background: rgba(201,146,58,0.04); transform: scale(1.03); }
-.dualistCardDragOver { border-color: var(--gold) !important; background: rgba(201,146,58,0.1) !important; box-shadow: var(--glow-gold) !important; transform: scale(1.05) !important; }
-.dualistCardInner { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; padding: 0.4rem; text-align: center; width: 100%; }
-.dualistCardBack { font-size: 1.8rem; color: var(--border-gold); opacity: 0.5; }
-.dualistCardSuit { font-size: 1rem; color: var(--border-gold); opacity: 0.3; }
-.dualistCardName { font-family: var(--font-display); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; color: var(--gold-light); line-height: 1.2; }
-.dualistCardPower { font-family: var(--font-display); font-size: 1.1rem; font-weight: 900; color: var(--text); }
-.dualistCardEffectText { font-size: 0.48rem; color: var(--text-faint); font-style: italic; line-height: 1.3; text-align: center; }
-.dualistCardPlaceholder { color: var(--text-faint); font-size: 1.2rem; }
-.dualistDropHint { font-size: 0.52rem; color: var(--text-faint); font-style: italic; text-align: center; line-height: 1.4; }
+.fieldPlayerName { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
+.passedBadge { font-family: var(--font-display); font-size: 0.48rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); border: 1px solid var(--border); padding: 1px 6px; border-radius: 20px; }
 
-.passedBadge { font-family: var(--font-display); font-size: 0.5rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); border: 1px solid var(--border); padding: 1px 6px; border-radius: 20px; white-space: nowrap; }
+/* Opponent board — fills remaining space in opp half */
+.oppBoard {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
 
-/* Turn row */
-.turnRow { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
-.centerLine { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); }
-.turnBadge { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.35rem 1.2rem; border-radius: 20px; white-space: nowrap; transition: all 0.3s; }
-.turnBadgeMine { background: rgba(201,146,58,0.15); color: var(--gold-light); border: 1px solid var(--border-gold); box-shadow: var(--glow-gold); animation: borderGlow 2s ease-in-out infinite; }
+/* ── Divider ── */
+.fieldDivider {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 0.3rem 1rem; flex-shrink: 0;
+}
+.dividerLine { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); }
+.turnBadge { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.28rem 1rem; border-radius: 20px; white-space: nowrap; transition: all 0.3s; }
+.turnBadgeMine { background: rgba(201,146,58,0.15); color: var(--gold-light); border: 1px solid var(--border-gold); animation: borderGlow 2s ease-in-out infinite; }
 .turnBadgeOpp { background: transparent; color: var(--text-faint); border: 1px solid var(--border); }
 
-/* Board + Dualist row */
-.boardAndDualist {
-  flex: 1; display: flex; gap: 0.8rem; min-height: 0; overflow: hidden;
+/* ── My half — exactly 50% of field height ── */
+.myHalf {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 1rem 0.3rem;
+  gap: 0.3rem;
 }
 
-/* My dualist area */
-.myDualistArea {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 0.4rem; flex-shrink: 0;
+/* My board — fills space between divider and name row */
+.myBoard {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  border-radius: var(--radius);
+  transition: background 0.2s;
 }
+.myBoardActive { cursor: crosshair; }
+.myBoardOver { background: rgba(201,146,58,0.04); box-shadow: inset 0 0 40px rgba(201,146,58,0.05); }
 
-/* Open spell board */
-.spellBoard {
-  flex: 1; position: relative;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: rgba(10,8,6,0.3);
-  overflow: hidden;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-  min-height: 160px;
-}
-.spellBoardActive {
-  border-color: var(--border);
-  cursor: crosshair;
-}
-.spellBoardActive:hover {
-  border-color: rgba(201,146,58,0.3);
-  background: rgba(10,8,6,0.4);
-}
-.spellBoardDragOver {
-  border-color: var(--gold) !important;
-  background: rgba(201,146,58,0.06) !important;
-  box-shadow: inset 0 0 30px rgba(201,146,58,0.08), var(--glow-gold) !important;
-}
+/* My name + buttons */
+.playerNameRow { flex-shrink: 0; }
+.actionBtns { display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap; }
+.dualistBtn { background: linear-gradient(135deg, #7a3a0a, var(--gold)); border: none; border-radius: var(--radius-sm); color: var(--white); font-family: var(--font-display); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.4rem 0.8rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; }
+.dualistBtn:hover { opacity: 0.85; transform: translateY(-1px); }
+.spellBtn { background: linear-gradient(135deg, #1a3a6b, #2a5aab); border: none; border-radius: var(--radius-sm); color: var(--white); font-family: var(--font-display); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.4rem 0.8rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; }
+.spellBtn:hover { opacity: 0.85; transform: translateY(-1px); }
+.passBtn { background: transparent; border: 1px solid var(--border-gold); border-radius: var(--radius-sm); color: var(--gold); font-family: var(--font-display); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.4rem 0.85rem; cursor: pointer; transition: background 0.2s, color 0.2s, transform 0.15s; }
+.passBtn:hover { background: rgba(201,146,58,0.1); color: var(--gold-light); transform: translateY(-1px); }
 
-/* Board hint */
-.boardHint {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
+/* ═══ Dualist anchor — centered inside board ══════════════ */
+/*
+  Both oppBoard and myBoard use position:relative.
+  .dualistAnchor is absolute, centered with transform.
+*/
+.dualistAnchor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  z-index: 4;
+  /* Prevent the anchor from eating board clicks */
   pointer-events: none;
 }
-.boardHintText { font-size: 0.75rem; color: var(--text-faint); font-style: italic; opacity: 0.5; text-align: center; }
-.boardHintDrop { font-family: var(--font-display); font-size: 0.75rem; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; }
+/* Re-enable clicks on the slot itself */
+.dualistAnchor > * { pointer-events: auto; }
 
-/* Spell tokens on board */
+.dualistLabel { font-family: var(--font-display); font-size: 0.5rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
+
+/* Card-shaped dualist slot */
+.dualistSlot {
+  width: 64px; height: 90px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed rgba(61,48,32,0.4);
+  background: rgba(10,8,6,0.25);
+  transition: all 0.2s;
+}
+.dualistSlotFilled {
+  border: 2px solid var(--border-gold);
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 14px rgba(201,146,58,0.1);
+}
+.dualistSlotActive { border-color: rgba(201,146,58,0.35); cursor: pointer; }
+.dualistSlotActive:hover { border-color: var(--gold); background: rgba(201,146,58,0.06); transform: scale(1.04); }
+.dualistSlotOver { border-color: var(--gold) !important; background: rgba(201,146,58,0.1) !important; box-shadow: var(--glow-gold) !important; transform: scale(1.06) !important; }
+
+.dsInner { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.12rem; padding: 0.3rem; text-align: center; width: 100%; height: 100%; }
+.dsBack { font-size: 1.8rem; color: var(--border-gold); opacity: 0.4; }
+.dsSuit { font-size: 0.85rem; color: var(--border-gold); opacity: 0.22; }
+.dsName { font-family: var(--font-display); font-size: 0.56rem; font-weight: 700; color: var(--gold-light); line-height: 1.2; letter-spacing: 0.04em; }
+.dsPower { font-family: var(--font-display); font-size: 1rem; font-weight: 900; color: var(--text); }
+.dsEffect { font-size: 0.42rem; color: var(--text-faint); font-style: italic; line-height: 1.3; }
+.dsEmpty { color: var(--text-faint); font-size: 1rem; opacity: 0.4; }
+.dsHint { font-size: 0.46rem; color: var(--text-faint); font-style: italic; }
+
+/* Board hint */
+.boardHint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.boardHint span { font-size: 0.7rem; color: var(--text-faint); font-style: italic; opacity: 0.4; text-align: center; padding: 0 2rem; }
+
+/* ═══ Spell tokens ════════════════════════════════════════ */
 .spellToken {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 56px; height: 78px;
+  width: 48px; height: 66px;
   border-radius: 5px;
-  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-  padding: 0.3rem 0.25rem 0.25rem;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  z-index: 5;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.2rem 0.2rem;
+  cursor: pointer; z-index: 5;
+  transition: transform 0.18s, box-shadow 0.18s;
 }
-.spellToken:hover { transform: translate(-50%, -50%) scale(1.12) translateY(-4px); z-index: 10; }
-.spellTokenMine {
-  background: linear-gradient(160deg, var(--surface-2), var(--surface));
-  border: 1px solid var(--border-gold);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 8px rgba(201,146,58,0.1);
-}
-.spellTokenOpp {
-  background: linear-gradient(160deg, #1a1015, #120d0a);
-  border: 1px solid var(--crimson);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 8px rgba(139,26,26,0.15);
-}
-.spellTokenInspected {
-  box-shadow: 0 0 0 2px #5a9aff, 0 8px 24px rgba(0,0,0,0.6) !important;
-  z-index: 12 !important;
-}
-.spellTokenArt {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-size: 1.4rem; font-weight: 900;
-  color: var(--border-gold); opacity: 0.5;
-  /* Future: replace with <img> tag for card art */
-  width: 100%;
-}
-.spellTokenLabel {
-  font-family: var(--font-display); font-size: 0.42rem; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--text-faint);
-  text-align: center; width: 100%;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.spellToken:hover { transform: translate(-50%, -50%) scale(1.15) translateY(-4px); z-index: 10; }
+.spellTokenMine { background: linear-gradient(160deg, var(--surface-2), var(--surface)); border: 1px solid var(--border-gold); box-shadow: 0 4px 14px rgba(0,0,0,0.5), 0 0 7px rgba(201,146,58,0.1); }
+.spellTokenOpp { background: linear-gradient(160deg, #1a1015, #120d0a); border: 1px solid var(--crimson); box-shadow: 0 4px 14px rgba(0,0,0,0.5), 0 0 7px rgba(139,26,26,0.15); }
+.spellTokenInspected { box-shadow: 0 0 0 2px #5a9aff, 0 8px 22px rgba(0,0,0,0.6) !important; z-index: 12 !important; }
+.spellTokenArt { flex: 1; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: var(--border-gold); opacity: 0.5; width: 100%; }
+.spellTokenLabel { font-family: var(--font-display); font-size: 0.38rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Action row */
-.actionRow {
-  display: flex; gap: 0.6rem; justify-content: flex-end;
-  flex-wrap: wrap; flex-shrink: 0; padding-top: 0.2rem;
+/* ═══ Hand — floating bottom of myHalf ═══════════════════ */
+.myHand {
+  display: flex; justify-content: center; align-items: flex-end;
+  gap: 0.45rem; flex-shrink: 0;
+  overflow-x: auto; padding: 0 0.5rem 0.2rem;
 }
-.dualistBtn {
-  background: linear-gradient(135deg, #7a3a0a, var(--gold));
-  border: none; border-radius: var(--radius-sm); color: var(--white);
-  font-family: var(--font-display); font-size: 0.68rem; font-weight: 700;
-  letter-spacing: 0.12em; text-transform: uppercase; padding: 0.5rem 1.1rem;
-  cursor: pointer; transition: opacity 0.2s, transform 0.15s; box-shadow: 0 3px 12px rgba(0,0,0,0.4);
-}
-.dualistBtn:hover { opacity: 0.85; transform: translateY(-1px); }
-.spellBtn {
-  background: linear-gradient(135deg, #1a3a6b, #2a5aab);
-  border: none; border-radius: var(--radius-sm); color: var(--white);
-  font-family: var(--font-display); font-size: 0.68rem; font-weight: 700;
-  letter-spacing: 0.12em; text-transform: uppercase; padding: 0.5rem 1.1rem;
-  cursor: pointer; transition: opacity 0.2s, transform 0.15s; box-shadow: 0 3px 12px rgba(0,0,0,0.4);
-}
-.spellBtn:hover { opacity: 0.85; transform: translateY(-1px); }
-.passBtn {
-  background: transparent; border: 1px solid var(--border-gold);
-  border-radius: var(--radius-sm); color: var(--gold);
-  font-family: var(--font-display); font-size: 0.68rem; font-weight: 600;
-  letter-spacing: 0.14em; text-transform: uppercase; padding: 0.5rem 1.2rem;
-  cursor: pointer; transition: background 0.2s, color 0.2s, transform 0.15s;
-}
-.passBtn:hover { background: rgba(201,146,58,0.1); color: var(--gold-light); transform: translateY(-1px); }
-
-/* ══ Result Overlay ═════════════════════════════════════════════ */
-.resultOverlay {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: rgba(5,3,2,0.8); backdrop-filter: blur(10px); z-index: 20; animation: overlayIn 0.3s ease;
-}
-.resultCard {
-  position: relative; background: var(--surface); border: 1px solid var(--border-gold);
-  border-radius: var(--radius-lg); padding: 2.5rem 3rem; text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 1rem;
-  box-shadow: var(--shadow-card), 0 0 60px rgba(201,146,58,0.15);
-  animation: modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width: 400px; width: 90%;
-}
-.resultSuits { font-size: 0.8rem; letter-spacing: 0.4em; color: var(--border-gold); opacity: 0.4; }
-.resultIcon { font-size: 3.5rem; }
-.resultTitle { font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; letter-spacing: 0.12em; color: var(--gold-light); }
-.resultSubtitle { font-style: italic; font-size: 0.85rem; color: var(--text-muted); }
-.resultPowers { display: flex; align-items: center; gap: 1rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.8rem 1.5rem; }
-.resultPowerBox { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
-.resultPowerName { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
-.resultPowerValue { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--text); }
-.resultPowerVs { font-size: 0.7rem; color: var(--text-faint); font-style: italic; }
-.nextRoundBtn {
-  background: linear-gradient(135deg, var(--gold) 0%, var(--crimson) 100%);
-  border: none; border-radius: var(--radius-sm); color: var(--white);
-  font-family: var(--font-display); font-size: 0.78rem; font-weight: 600;
-  letter-spacing: 0.14em; text-transform: uppercase; padding: 0.8rem 2.2rem;
-  cursor: pointer; transition: opacity 0.2s, transform 0.15s; margin-top: 0.5rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-}
-.nextRoundBtn:hover { opacity: 0.9; transform: translateY(-2px); }
-
-/* ══ Inspector ══════════════════════════════════════════════════ */
-.inspectorPanel {
-  position: relative;
-  border-left: 1px solid var(--border); background: rgba(10,8,6,0.7);
-  backdrop-filter: blur(8px); display: flex; flex-direction: column;
-  align-items: center; justify-content: center; padding: 1.5rem 1rem;
-  min-width: 180px;
-}
-.inspectorVisible { opacity: 1; }
-.inspectorCard {
-  position: relative; width: 100%; max-width: 220px;
-  background: var(--surface); border: 1px solid var(--border-gold);
-  border-radius: var(--radius-lg); overflow: hidden;
-  box-shadow: var(--shadow-card), 0 0 40px rgba(201,146,58,0.1);
-  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
-.inspectorImageSlot {
-  width: 100%; aspect-ratio: 3/2;
-  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 0.4rem; border-bottom: 1px solid var(--border); position: relative; overflow: hidden;
-}
-.inspectorImageSlot::before {
-  content: ''; position: absolute; inset: 0;
-  background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(201,146,58,0.03) 10px, rgba(201,146,58,0.03) 20px);
-}
-.inspectorImagePlaceholder { font-family: var(--font-display); font-size: 3rem; font-weight: 900; color: var(--border-gold); opacity: 0.3; position: relative; z-index: 1; }
-.inspectorImageNote { font-size: 0.6rem; color: var(--text-faint); font-style: italic; position: relative; z-index: 1; }
-.inspectorBody { padding: 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
-.inspectorHeader { display: flex; justify-content: space-between; align-items: center; }
-.inspectorName { font-family: var(--font-display); font-size: 1rem; font-weight: 700; letter-spacing: 0.08em; color: var(--gold-light); }
-.inspectorPower { font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; min-width: 30px; text-align: center; }
-.inspectorDivider { height: 1px; background: linear-gradient(to right, transparent, var(--border-gold), transparent); opacity: 0.3; }
-.inspectorEffect { display: flex; flex-direction: column; gap: 0.3rem; }
-.inspectorEffectLabel { font-family: var(--font-display); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
-.inspectorEffectText { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; font-style: italic; }
-.inspectorActions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.3rem; }
-.inspectorDualistBtn { background: linear-gradient(135deg, #7a3a0a, var(--gold)); border: none; border-radius: var(--radius-sm); color: var(--white); font-family: var(--font-display); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.55rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; width: 100%; }
-.inspectorDualistBtn:hover { opacity: 0.85; transform: translateY(-1px); }
-.inspectorSpellBtn { background: linear-gradient(135deg, #1a3a6b, #2a5aab); border: none; border-radius: var(--radius-sm); color: var(--white); font-family: var(--font-display); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.55rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; width: 100%; }
-.inspectorSpellBtn:hover { opacity: 0.85; transform: translateY(-1px); }
-.inspectorSpellNote { font-size: 0.72rem; color: var(--text-faint); font-style: italic; text-align: center; margin-top: 0.3rem; }
-.inspectorClose { position: absolute; top: 8px; right: 8px; background: rgba(10,8,6,0.6); border: none; color: var(--text-faint); font-size: 0.75rem; cursor: pointer; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: color 0.2s, background 0.2s; z-index: 2; }
-.inspectorClose:hover { color: var(--gold); background: rgba(10,8,6,0.9); }
-.inspectorEmpty { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; color: var(--text-faint); font-style: italic; font-size: 0.8rem; text-align: center; opacity: 0.5; }
-.inspectorEmptyIcon { font-size: 2rem; color: var(--border-gold); opacity: 0.3; }
-
-/* ══ Hand ═══════════════════════════════════════════════════════ */
-.handSection {
-  position: relative; z-index: 5; border-top: 1px solid var(--border);
-  background: rgba(10,8,6,0.92); backdrop-filter: blur(12px);
-  padding: 0.7rem 1.5rem 0.8rem; flex-shrink: 0;
-}
-.handLabel { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.8rem; }
-.handCount { background: var(--surface-2); border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px; font-size: 0.6rem; color: var(--text-muted); }
-.hand { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.3rem; padding-top: 0.4rem; }
-.hand::-webkit-scrollbar { height: 3px; }
-.hand::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.myHand::-webkit-scrollbar { height: 2px; }
+.myHand::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.emptyHand { font-style: italic; font-size: 0.75rem; color: var(--text-faint); padding: 0.5rem; }
 
 .handCard {
-  flex-shrink: 0; width: 115px;
+  flex-shrink: 0; width: 100px;
   background: linear-gradient(160deg, var(--surface-2), var(--surface));
   border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 0.65rem 0.55rem; cursor: pointer;
+  padding: 0.55rem 0.5rem; cursor: pointer;
   position: relative; overflow: hidden; user-select: none;
-  animation: cardDeal 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-  animation-delay: calc(var(--card-index, 0) * 0.06s);
+  animation: cardDeal 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+  animation-delay: calc(var(--card-index, 0) * 0.05s);
   transition: border-color 0.2s, transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+  transform-origin: bottom center;
 }
-@keyframes cardDeal { from{transform:translateY(30px) scale(0.9);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
-.handCard:hover:not(.handCardDisabled) { border-color: var(--border-gold); transform: translateY(-8px) scale(1.03); box-shadow: 0 12px 30px rgba(0,0,0,0.6), var(--glow-gold); z-index: 10; }
-.handCardSelected { border-color: var(--gold) !important; transform: translateY(-14px) scale(1.05) !important; box-shadow: 0 18px 40px rgba(0,0,0,0.7), 0 0 30px rgba(201,146,58,0.4) !important; z-index: 11 !important; }
-.handCardInspected { border-color: #5a9aff !important; box-shadow: 0 0 20px rgba(42,90,171,0.3) !important; }
-.handCardDisabled { opacity: 0.4; cursor: default; }
+@keyframes cardDeal { from{transform:translateY(40px) scale(0.85);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+.handCard:hover:not(.handCardDisabled) { border-color: var(--border-gold); transform: translateY(-10px) scale(1.04); box-shadow: 0 14px 30px rgba(0,0,0,0.65), var(--glow-gold); z-index: 10; }
+.handCardSelected { border-color: var(--gold) !important; transform: translateY(-16px) scale(1.06) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 30px rgba(201,146,58,0.4) !important; z-index: 11 !important; }
+.handCardInspected { border-color: #5a9aff !important; box-shadow: 0 0 18px rgba(42,90,171,0.35) !important; }
+.handCardDisabled { opacity: 0.35; cursor: default; }
 .handCardGlow { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,146,58,0.07), transparent); pointer-events: none; }
-.handCardTop { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem; }
-.handCardName { font-family: var(--font-display); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; color: var(--gold-light); line-height: 1.2; }
-.handCardPower { font-family: var(--font-display); font-size: 0.9rem; font-weight: 900; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; line-height: 1.2; flex-shrink: 0; }
-.handCardSuit { text-align: center; font-size: 1.1rem; color: var(--border-gold); opacity: 0.15; margin: 0.25rem 0; }
-.handCardBottom { display: flex; flex-direction: column; gap: 0.25rem; border-top: 1px solid rgba(61,48,32,0.4); padding-top: 0.35rem; }
-.handCardEffectRow { display: flex; flex-direction: column; gap: 0.1rem; }
-.handCardEffectTag { font-family: var(--font-display); font-size: 0.46rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
-.handCardEffectDesc { font-size: 0.6rem; color: var(--text-muted); line-height: 1.3; }
-.emptyHand { font-style: italic; font-size: 0.82rem; color: var(--text-faint); padding: 1rem 2rem; }
+.handCardTop { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.3rem; }
+.handCardName { font-family: var(--font-display); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold-light); line-height: 1.2; }
+.handCardPower { font-family: var(--font-display); font-size: 0.85rem; font-weight: 900; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px; flex-shrink: 0; }
+.handCardSuit { text-align: center; font-size: 0.9rem; color: var(--border-gold); opacity: 0.12; margin: 0.18rem 0; }
+.handCardBottom { display: flex; flex-direction: column; gap: 0.2rem; border-top: 1px solid rgba(61,48,32,0.4); padding-top: 0.28rem; }
+.handCardEffectRow { display: flex; flex-direction: column; gap: 0.06rem; }
+.handCardEffectTag { font-family: var(--font-display); font-size: 0.42rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
+.handCardEffectDesc { font-size: 0.55rem; color: var(--text-muted); line-height: 1.3; }
 
-/* ══ Responsive ════════════════════════════════════════════════ */
+/* ═══ Result overlay ══════════════════════════════════════ */
+.resultOverlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(5,3,2,0.82); backdrop-filter: blur(10px); z-index: 20; animation: overlayIn 0.3s ease; }
+.resultCard { position: relative; background: var(--surface); border: 1px solid var(--border-gold); border-radius: var(--radius-lg); padding: 2.2rem 2.8rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.9rem; box-shadow: var(--shadow-card), 0 0 60px rgba(201,146,58,0.15); animation: modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width: 380px; width: 90%; }
+.resultSuits { font-size: 0.75rem; letter-spacing: 0.4em; color: var(--border-gold); opacity: 0.4; }
+.resultIcon { font-size: 3rem; }
+.resultTitle { font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; letter-spacing: 0.12em; color: var(--gold-light); }
+.resultSubtitle { font-style: italic; font-size: 0.82rem; color: var(--text-muted); }
+.resultPowers { display: flex; align-items: center; gap: 1rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.7rem 1.3rem; }
+.resultPowerBox { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+.resultPowerName { font-family: var(--font-display); font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
+.resultPowerValue { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.resultPowerVs { font-size: 0.68rem; color: var(--text-faint); font-style: italic; }
+.nextRoundBtn { background: linear-gradient(135deg, var(--gold) 0%, var(--crimson) 100%); border: none; border-radius: var(--radius-sm); color: var(--white); font-family: var(--font-display); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.75rem 2rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; margin-top: 0.4rem; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+.nextRoundBtn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+/* ═══ Inspector ═══════════════════════════════════════════ */
+.inspectorPanel { position: relative; border-left: 1px solid var(--border); background: rgba(10,8,6,0.72); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.2rem 0.8rem; min-width: 160px; overflow-y: auto; }
+.inspectorCard { position: relative; width: 100%; max-width: 210px; background: var(--surface); border: 1px solid var(--border-gold); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card), 0 0 40px rgba(201,146,58,0.1); animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.inspectorImageSlot { width: 100%; aspect-ratio: 3/2; background: linear-gradient(135deg, var(--surface-2), var(--surface-3)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+.inspectorImageSlot::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(201,146,58,0.03) 10px, rgba(201,146,58,0.03) 20px); }
+.inspectorImagePlaceholder { font-family: var(--font-display); font-size: 2.8rem; font-weight: 900; color: var(--border-gold); opacity: 0.3; position: relative; z-index: 1; }
+.inspectorImageNote { font-size: 0.58rem; color: var(--text-faint); font-style: italic; position: relative; z-index: 1; }
+.inspectorBody { padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.inspectorHeader { display: flex; justify-content: space-between; align-items: center; }
+.inspectorName { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; letter-spacing: 0.08em; color: var(--gold-light); }
+.inspectorPower { font-family: var(--font-display); font-size: 1.1rem; font-weight: 900; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; min-width: 28px; text-align: center; }
+.inspectorDivider { height: 1px; background: linear-gradient(to right, transparent, var(--border-gold), transparent); opacity: 0.3; }
+.inspectorEffect { display: flex; flex-direction: column; gap: 0.25rem; }
+.inspectorEffectLabel { font-family: var(--font-display); font-size: 0.56rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
+.inspectorEffectText { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; font-style: italic; }
+.inspectorActions { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.25rem; }
+.inspectorDualistBtn { background: linear-gradient(135deg, #7a3a0a, var(--gold)); border: none; border-radius: var(--radius-sm); color: var(--white); font-family: var(--font-display); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.5rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; width: 100%; }
+.inspectorDualistBtn:hover { opacity: 0.85; transform: translateY(-1px); }
+.inspectorSpellBtn { background: linear-gradient(135deg, #1a3a6b, #2a5aab); border: none; border-radius: var(--radius-sm); color: var(--white); font-family: var(--font-display); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.5rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; width: 100%; }
+.inspectorSpellBtn:hover { opacity: 0.85; transform: translateY(-1px); }
+.inspectorSpellNote { font-size: 0.68rem; color: var(--text-faint); font-style: italic; text-align: center; margin-top: 0.2rem; }
+.inspectorClose { position: absolute; top: 8px; right: 8px; background: rgba(10,8,6,0.6); border: none; color: var(--text-faint); font-size: 0.72rem; cursor: pointer; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: color 0.2s; z-index: 2; }
+.inspectorClose:hover { color: var(--gold); }
+.inspectorEmpty { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; color: var(--text-faint); font-style: italic; font-size: 0.78rem; text-align: center; opacity: 0.45; }
+.inspectorEmptyIcon { font-size: 1.8rem; color: var(--border-gold); opacity: 0.3; }
+
+/* ═══ Responsive ══════════════════════════════════════════ */
 @media (max-width: 900px) {
   .gameLayout { grid-template-columns: 1fr !important; }
   .logPanel { display: none; }
-  .inspectorPanel { position: fixed; right: 0; top: 0; bottom: 0; width: 240px !important; z-index: 50; border-left: 1px solid var(--border-gold); transform: translateX(100%); transition: transform 0.3s ease; }
+  .inspectorPanel { position: fixed; right: 0; top: 0; bottom: 0; width: 220px !important; z-index: 50; transform: translateX(100%); transition: transform 0.3s ease; }
   .inspectorVisible { transform: translateX(0) !important; }
 }
 @media (max-width: 600px) {
-  .rpsButtons { gap: 0.5rem; }
-  .rpsBtn { padding: 0.8rem 1rem; min-width: 70px; }
-  .rpsBtnEmoji { font-size: 1.6rem; }
-  .handCard { width: 98px; }
-  .playArea { padding: 0.6rem 0.8rem; }
+  .handCard { width: 88px; }
+  .rpsBtn { padding: 0.7rem 0.9rem; min-width: 66px; }
+  .rpsBtnEmoji { font-size: 1.5rem; }
 }
