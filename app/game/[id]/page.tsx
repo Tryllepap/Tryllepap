@@ -523,23 +523,27 @@ export default function GamePage() {
                           <span className={styles.handCardName}>{tx?.name ?? card.name}</span>
                           <span className={styles.handCardPower}>{card.basePower}</span>
                         </div>
-                        <div className={styles.handCardSuit}>
-  {card.image ? <img src={card.image} alt={card.name} className={styles.handCardImage} /> : "♦"}
+<div className={styles.handCardSuit}>
+  {card.image
+    ? <img src={card.image} alt={card.name} className={styles.handCardImage} />
+    : "♦"}
 </div>
-                        <div className={styles.handCardBottom}>
-                          <div className={styles.handCardEffectRow}>
-                            <span className={styles.handCardEffectTag}>
-                              {card.isInstant ? t.instant : "Spell"}
-                            </span>
-                            <span className={styles.handCardEffectDesc}>{tx?.spellDescription ?? card.spellDescription}</span>
-                          </div>
-                          <div className={styles.handCardEffectRow}>
-                            <span className={styles.handCardEffectTag}>
-                              {card.isFlipEffect ? t.flipEffect : "Dualist"}
-                            </span>
-                            <span className={styles.handCardEffectDesc}>{tx?.dualistDescription ?? card.dualistDescription}</span>
-                          </div>
-                        </div>
+{!card.image && (
+  <div className={styles.handCardBottom}>
+    <div className={styles.handCardEffectRow}>
+      <span className={styles.handCardEffectTag}>
+        {card.isInstant ? t.instant : "Spell"}
+      </span>
+      <span className={styles.handCardEffectDesc}>{tx?.spellDescription ?? card.spellDescription}</span>
+    </div>
+    <div className={styles.handCardEffectRow}>
+      <span className={styles.handCardEffectTag}>
+        {card.isFlipEffect ? t.flipEffect : "Dualist"}
+      </span>
+      <span className={styles.handCardEffectDesc}>{tx?.dualistDescription ?? card.dualistDescription}</span>
+    </div>
+  </div>
+)}
                         {card.categories.length > 0 && (
                           <div className={styles.handCardCategories}>
                             {(tx?.categories ?? card.categories).map(cat => (
