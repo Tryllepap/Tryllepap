@@ -6,6 +6,7 @@ const cinzel = Cinzel({
   subsets: ["latin"],
   variable: "--font-cinzel",
   weight: ["400", "600", "700", "900"],
+  display: "swap",
 });
 
 const imFell = IM_Fell_English({
@@ -13,6 +14,8 @@ const imFell = IM_Fell_English({
   variable: "--font-im-fell",
   weight: "400",
   style: ["normal", "italic"],
+  display: "swap",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
