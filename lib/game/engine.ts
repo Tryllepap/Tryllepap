@@ -108,7 +108,9 @@ function resolveRps(p1: PlayerState, p2: PlayerState): string | "draw" {
 export function playSpellCard(
   state: GameState,
   playerId: string,
-  cardId: string
+  cardId: string,
+  x = 20 + Math.random() * 60,
+  y = 15 + Math.random() * 70
 ): GameState {
   if (state.phase !== "playing") return state;
   if (state.activePlayerId !== playerId) return state;
@@ -119,12 +121,18 @@ export function playSpellCard(
   const cardDef = CARD_MAP[cardId];
   if (!cardDef) return state;
 
-  let s = removeCardFromHand(state, playerId, cardId);
-  s = updatePlayer(s, playerId, p => ({
-    ...p,
-    discard: [...p.discard, cardId],
-    spellsPlayed: [...p.spellsPlayed, cardId],
-  }));
+let s = removeCardFromHand(state, playerId, cardId);
+s = updatePlayer(s, playerId, p => ({
+  ...p,
+  discard: [...p.discard, cardId],
+  spellsPlayed: [...p.spellsPlayed, cardId],
+  spellsOnBoard: [...p.spellsOnBoard, {
+    instanceId: `${cardId}-${Date.now()}`,
+    cardId,
+    x,
+    y,
+  }],
+}));
 
   const effectLabel = cardDef.isInstant ? " (Instant)" : "";
   s = cardDef.spellEffect(s, playerId);
