@@ -40,9 +40,9 @@ export async function POST(req: NextRequest) {
       case "acknowledge_rps":
         state = acknowledgeRps(state);
         break;
-      case "play_spell":
-        state = playSpellCard(state, playerId, payload.cardId);
-        break;
+case "play_spell":
+  state = playSpellCard(state, playerId, payload.cardId, payload.x, payload.y);
+  break;
       case "place_dualist":
         state = placeDualist(state, playerId, payload.cardId);
         break;
