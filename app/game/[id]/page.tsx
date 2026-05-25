@@ -523,7 +523,9 @@ export default function GamePage() {
                           <span className={styles.handCardName}>{tx?.name ?? card.name}</span>
                           <span className={styles.handCardPower}>{card.basePower}</span>
                         </div>
-                        <div className={styles.handCardSuit}>♦</div>
+                        <div className={styles.handCardSuit}>
+  {card.image ? <img src={card.image} alt={card.name} className={styles.handCardImage} /> : "♦"}
+</div>
                         <div className={styles.handCardBottom}>
                           <div className={styles.handCardEffectRow}>
                             <span className={styles.handCardEffectTag}>
