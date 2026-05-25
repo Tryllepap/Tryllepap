@@ -605,9 +605,12 @@ export default function GamePage() {
           />
           {inspectedCardDef ? (
             <div className={styles.inspectorCard}>
-              <div className={styles.inspectorImageSlot}>
-                <span className={styles.inspectorImagePlaceholder}>{(inspectedCardTx?.name ?? inspectedCardDef.name)[0]}</span>
-                <span className={styles.inspectorImageNote}>{t.cardArtSoon}</span>
+             <div className={styles.inspectorImageSlot}>
+  {inspectedCardDef.image
+    ? <img src={inspectedCardDef.image} alt={inspectedCardTx?.name ?? inspectedCardDef.name} className={styles.inspectorImage} />
+    : <><span className={styles.inspectorImagePlaceholder}>{(inspectedCardTx?.name ?? inspectedCardDef.name)[0]}</span>
+        <span className={styles.inspectorImageNote}>{t.cardArtSoon}</span></>
+  }
               </div>
               <div className={styles.inspectorBody}>
                 <div className={styles.inspectorHeader}>
