@@ -1,25 +1,20 @@
 /**
  * ============================================================
  *  CARD REGISTRY
- *  All cards are defined here.
- *  To add a new card:
- *    1. Define it as a CardDefinition below.
- *    2. Add it to the CARD_REGISTRY array.
- *    3. Document its effects in lib/game/rules.ts
  * ============================================================
  */
 
-import { GameState, applyPowerDelta, drawCards, discardCards } from "./state";
+import { GameState, applyPowerDelta, drawCards, discardCards, getPlayer } from "./state";
 
 export interface CardDefinition {
   id: string;
   name: string;
   basePower: number;
-  // Short text shown on card face
+  categories: string[];           // e.g. ["Beast", "Troll"]
   spellDescription: string;
   dualistDescription: string;
-  // Effect functions — receive full game state + acting player id
-  // Must return the NEW game state (treat state as immutable)
+  isFlipEffect?: boolean;         // true = dualist effect fires on reveal, not on placement
+  isInstant?: boolean;            // true = spell effect fires immediately with no delay
   spellEffect:   (state: GameState, playerId: string) => GameState;
   dualistEffect: (state: GameState, playerId: string) => GameState;
 }
@@ -40,72 +35,89 @@ const Conrad: CardDefinition = {
   id: "conrad",
   name: "Conrad",
   basePower: 1,
+  categories: [],
   spellDescription: "+1 power to your Dualist",
   dualistDescription: "-1 power to your own Dualist",
-  spellEffect: (state, playerId) => {
-    // Add +1 to the acting player's current Dualist power
-    return applyPowerDelta(state, playerId, +1);
-  },
-  dualistEffect: (state, playerId) => {
-    // Subtract 1 from the acting player's own Dualist power
-    return applyPowerDelta(state, playerId, -1);
-  },
+  spellEffect: (state, playerId) => applyPowerDelta(state, playerId, +1),
+  dualistEffect: (state, playerId) => applyPowerDelta(state, playerId, -1),
 };
 
 /**
  * DONRAD
- * Spell:   Draw 1 card
- * Dualist: Draw 1 card
+ * Spell:   Draw 1 card (Instant)
+ * Dualist: Draw 1 card (Flip Effect)
  */
 const Donrad: CardDefinition = {
   id: "donrad",
   name: "Donrad",
   basePower: 1,
-  spellDescription: "Draw 1 card",
-  dualistDescription: "Draw 1 card",
-  spellEffect: (state, playerId) => {
-    return drawCards(state, playerId, 1);
-  },
-  dualistEffect: (state, playerId) => {
-    return drawCards(state, playerId, 1);
-  },
+  categories: [],
+  isInstant: true,
+  isFlipEffect: true,
+  spellDescription: "Draw 1 card (Instant)",
+  dualistDescription: "Draw 1 card (Flip Effect)",
+  spellEffect: (state, playerId) => drawCards(state, playerId, 1),
+  dualistEffect: (state, playerId) => drawCards(state, playerId, 1),
 };
 
 /**
  * MONRAD
  * Spell:   Discard 1 card
  * Dualist: Discard 1 card
- * Note: discards a random card from the player's hand for now.
- *       Future: let player choose which card to discard.
  */
 const Monrad: CardDefinition = {
   id: "monrad",
   name: "Monrad",
   basePower: 0,
+  categories: [],
   spellDescription: "Discard 1 card",
   dualistDescription: "Discard 1 card",
+  spellEffect: (state, playerId) => discardCards(state, playerId, 1),
+  dualistEffect: (state, playerId) => discardCards(state, playerId, 1),
+};
+
+/**
+ * FRIENDLY TROLL
+ * Spell:   Your dualist gets +2 if you have no cards in hand (Flip Effect)
+ * Dualist: +2 if you have no cards in hand (Flip Effect)
+ * Categories: Beast, Troll
+ */
+const FriendlyTroll: CardDefinition = {
+  id: "friendly_troll",
+  name: "Friendly Troll",
+  basePower: 4,
+  categories: ["Beast", "Troll"],
+  isFlipEffect: true,
+  spellDescription: "Your Dualist gets +2 if you have no cards in hand (Flip Effect)",
+  dualistDescription: "The troll has +2 if you have no cards in hand (Flip Effect)",
   spellEffect: (state, playerId) => {
-    return discardCards(state, playerId, 1);
+    const player = getPlayer(state, playerId);
+    if (player.hand.length === 0) {
+      return applyPowerDelta(state, playerId, +2);
+    }
+    return state;
   },
   dualistEffect: (state, playerId) => {
-    return discardCards(state, playerId, 1);
+    const player = getPlayer(state, playerId);
+    if (player.hand.length === 0) {
+      return applyPowerDelta(state, playerId, +2);
+    }
+    return state;
   },
 };
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
-// Add new cards to this array. Order does not matter.
 export const CARD_REGISTRY: CardDefinition[] = [
   Conrad,
   Donrad,
   Monrad,
+  FriendlyTroll,
 ];
 
-// Fast lookup by id
 export const CARD_MAP: Record<string, CardDefinition> = Object.fromEntries(
   CARD_REGISTRY.map(c => [c.id, c])
 );
 
-// Build a shuffled deck of n copies of each card
 export function buildDeck(copiesPerCard = 3): string[] {
   const deck: string[] = [];
   for (const card of CARD_REGISTRY) {
