@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getPusherClient } from "@/lib/pusher";
@@ -344,7 +345,7 @@ export default function GamePage() {
                       {opponent.dualist && phase === "resolution" ? (
                         <div className={styles.dsInner}>
                           {CARD_MAP[opponent.dualist]?.image
-                            ? <img src={CARD_MAP[opponent.dualist].image} alt={cardName(opponent.dualist)} className={styles.dsImage} />
+                            ? <Image fill src={CARD_MAP[opponent.dualist].image!} alt={cardName(opponent.dualist)} className={styles.dsImage} />
                             : <>
                                 <span className={styles.dsSuit}>♦</span>
                                 <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
@@ -372,7 +373,7 @@ export default function GamePage() {
                         onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
                       >
                         {card?.image
-                          ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
+                          ? <Image fill src={card.image!} alt={card.name} className={styles.spellTokenImage} />
                           : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
                         }
                       </div>
@@ -436,7 +437,7 @@ export default function GamePage() {
                       {me.dualist ? (
                         <div className={styles.dsInner}>
                           {CARD_MAP[me.dualist]?.image
-                            ? <img src={CARD_MAP[me.dualist].image} alt={cardName(me.dualist)} className={styles.dsImage} />
+                            ? <Image fill src={CARD_MAP[me.dualist].image!} alt={cardName(me.dualist)} className={styles.dsImage} />
                             : <>
                                 <span className={styles.dsSuit}>♦</span>
                                 <span className={styles.dsName}>{cardName(me.dualist)}</span>
@@ -517,7 +518,7 @@ export default function GamePage() {
                         }}
                       >
                         {card.image
-                          ? <img src={card.image} alt={card.name} className={styles.handCardImage} />
+                          ? <Image fill src={card.image} alt={card.name} className={styles.handCardImage} />
                           : <>
                               <div className={styles.handCardGlow} />
                               <div className={styles.handCardTop}>
@@ -604,7 +605,7 @@ export default function GamePage() {
             <div className={styles.inspectorCard}>
               <div className={styles.inspectorImageSlot}>
                 {inspectedCardDef.image
-                  ? <img src={inspectedCardDef.image} alt={inspectedCardTx?.name ?? inspectedCardDef.name} className={styles.inspectorImage} />
+                  ? <Image fill src={inspectedCardDef.image} alt={inspectedCardTx?.name ?? inspectedCardDef.name} className={styles.inspectorImage} />
                   : <>
                       <span className={styles.inspectorImagePlaceholder}>{(inspectedCardTx?.name ?? inspectedCardDef.name)[0]}</span>
                       <span className={styles.inspectorImageNote}>{t.cardArtSoon}</span>
