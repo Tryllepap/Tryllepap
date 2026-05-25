@@ -10,6 +10,13 @@ export type GamePhase =
   | "round_result"
   | "game_over";
 
+export interface BoardSpell {
+  instanceId: string;
+  cardId: string;
+  x: number;
+  y: number;
+}
+
 export interface PlayerState {
   id: string;
   username: string;
@@ -22,6 +29,7 @@ export interface PlayerState {
   hasPassed: boolean;
   rpsChoice: RpsChoice | null;
   spellsPlayed: string[];
+  spellsOnBoard: BoardSpell[];
 }
 
 export interface GameState {
@@ -44,19 +52,23 @@ export function createInitialState(
   player1: { id: string; username: string },
   player2: { id: string; username: string }
 ): GameState {
-  const makePlayer = (p: { id: string; username: string }): PlayerState => ({
-    id: p.id,
-    username: p.username,
-    hand: [],
-    deck: buildDeck(3),
-    discard: [],
-    dualist: null,
-    dualistPower: 0,
-    roundsWon: 0,
-    hasPassed: false,
-    rpsChoice: null,
-    spellsPlayed: [],
-  });
+export function resetForNewRound(state: GameState, firstPlayerId: string): GameState {
+  return {
+    ...state,
+    phase: "playing",
+    activePlayerId: firstPlayerId,
+    lastRoundWinner: null,
+    previousFirstPlayerId: firstPlayerId,
+    players: state.players.map(p => ({
+      ...p,
+      dualist: null,
+      dualistPower: 0,
+      hasPassed: false,
+      spellsPlayed: [],
+      spellsOnBoard: [],
+    })),
+  };
+}
 
   return {
     id: gameId,
