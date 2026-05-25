@@ -521,13 +521,7 @@ export default function GamePage() {
                         }}
                       >
 {card.image
-  ? <>
-      <img src={card.image} alt={card.name} className={styles.handCardImage} />
-      <div className={styles.handCardOverlay}>
-        <span className={styles.handCardOverlayName}>{tx?.name ?? card.name}</span>
-        <span className={styles.handCardOverlayPower}>{card.basePower}</span>
-      </div>
-    </>
+  ? <img src={card.image} alt={card.name} className={styles.handCardImage} />
   : <>
                               <div className={styles.handCardGlow} />
                               <div className={styles.handCardTop}>
