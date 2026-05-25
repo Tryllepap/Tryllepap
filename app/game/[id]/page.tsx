@@ -341,26 +341,36 @@ export default function GamePage() {
                 </div>
                 <div className={styles.oppBoard}>
                   <div className={styles.dualistAnchor}>
-                    <div className={`${styles.dualistSlot} ${opponent.dualist ? styles.dualistSlotFilled : ""}`}>
-                      {opponent.dualist && phase === "resolution" ? (
-                        <div className={styles.dsInner}>
-                          {CARD_MAP[opponent.dualist]?.image
-                            ? <Image fill src={CARD_MAP[opponent.dualist].image!} alt={cardName(opponent.dualist)} className={styles.dsImage} />
-                            : <>
-                                <span className={styles.dsSuit}>♦</span>
-                                <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
-                                <span className={styles.dsPower}>{opponent.dualistPower}</span>
-                              </>
-                          }
-                        </div>
-                      ) : opponent.dualist ? (
-                        <div className={styles.dsInner}>
-                          <span className={styles.dsSuit}>♦</span>
-                          <span className={styles.dsName}>?</span>
-                        </div>
-                      ) : null}
-                    </div>
-                    <span className={styles.dualistLabel}>{t.dualist}</span>
+<div
+  className={`${styles.dualistSlot} ${opponent.dualist ? styles.dualistSlotFilled : ""}`}
+  onClick={e => {
+    e.stopPropagation();
+    if (opponent.dualist && phase === "resolution") {
+      setInspectCard(inspectCard === opponent.dualist ? null : opponent.dualist);
+      setInspectSpell(null);
+    }
+  }}
+>
+  {opponent.dualist && phase === "resolution" ? (
+    // Revealed — show card image or text
+    <div className={styles.dsInner}>
+      {CARD_MAP[opponent.dualist]?.image
+        ? <img src={CARD_MAP[opponent.dualist].image} alt={cardName(opponent.dualist)} className={styles.dsImage} />
+        : <>
+            <span className={styles.dsSuit}>♦</span>
+            <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
+            <span className={styles.dsPower}>{opponent.dualistPower}</span>
+          </>
+      }
+    </div>
+  ) : opponent.dualist ? (
+    // Face down — show back of card
+    <div className={styles.dsInner}>
+      <span className={styles.dsBack}>?</span>
+    </div>
+  ) : null}
+</div>
+<span className={styles.dualistLabel}>{t.dualist}</span>
                   </div>
                   {oppSpells.map(spell => {
                     const card = CARD_MAP[spell.cardId];
@@ -432,10 +442,16 @@ export default function GamePage() {
                       onDragOver={e => { e.preventDefault(); e.stopPropagation(); if (!me.dualist) setDragOverDualist(true); }}
                       onDragLeave={() => setDragOverDualist(false)}
                       onDrop={onDropDualist}
-                      onClick={e => {
-                        e.stopPropagation();
-                        if (selectedCard && isMyTurn && !me.dualist && phase === "playing") handlePlaceDualist(selectedCard);
-                      }}
+onClick={e => {
+  e.stopPropagation();
+  if (me.dualist) {
+    // Inspect placed dualist
+    setInspectCard(inspectCard === me.dualist ? null : me.dualist);
+    setInspectSpell(null);
+  } else if (selectedCard && isMyTurn && phase === "playing") {
+    handlePlaceDualist(selectedCard);
+  }
+}}
                     >
                       {me.dualist ? (
                         <div className={styles.dsInner}>
