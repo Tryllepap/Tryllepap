@@ -93,7 +93,7 @@ export function addLog(state: GameState, message: string): GameState {
 export function drawCards(state: GameState, playerId: string, n: number): GameState {
   return updatePlayer(state, playerId, player => {
     let deck = [...player.deck];
-    let hand = [...player.hand];
+    const hand = [...player.hand];
     let discard = [...player.discard];
     for (let i = 0; i < n; i++) {
       if (hand.length >= MAX_HAND_SIZE) break;
