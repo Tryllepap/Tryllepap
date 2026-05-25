@@ -12,13 +12,7 @@ import styles from "./game.module.css";
 type RpsChoice = "rock" | "paper" | "scissors";
 const RPS_EMOJI: Record<RpsChoice, string> = { rock: "🪨", paper: "📄", scissors: "✂️" };
 
-interface PlacedSpell {
-  instanceId: string;
-  cardId: string;
-  x: number;
-  y: number;
-  playerId: string;
-}
+
 
 export default function GamePage() {
   const router = useRouter();
@@ -43,8 +37,7 @@ export default function GamePage() {
   const [dragOverDualist, setDragOverDualist] = useState(false);
   const [dragOverMyBoard, setDragOverMyBoard] = useState(false);
 
-  const [placedSpells, setPlacedSpells] = useState<PlacedSpell[]>([]);
-  const [inspectSpell, setInspectSpell] = useState<PlacedSpell | null>(null);
+const [inspectSpell, setInspectSpell] = useState<{ instanceId: string; cardId: string } | null>(null);
 
   const [logWidth, setLogWidth] = useState(200);
   const logResizing = useRef(false);
@@ -144,17 +137,12 @@ export default function GamePage() {
     sendAction("rps", { choice });
   };
 
-  const handlePlaySpell = useCallback((cardId: string, dropX?: number, dropY?: number) => {
-    sendAction("play_spell", { cardId });
-    const x = dropX !== undefined ? dropX : 20 + Math.random() * 60;
-    const y = dropY !== undefined ? dropY : 15 + Math.random() * 70;
-    setPlacedSpells(prev => [...prev, {
-      instanceId: `${cardId}-${Date.now()}`,
-      cardId, x, y,
-      playerId: myUsernameRef.current!,
-    }]);
-    setSelectedCard(null); setInspectCard(null);
-  }, [sendAction]);
+const handlePlaySpell = useCallback((cardId: string, dropX?: number, dropY?: number) => {
+  const x = dropX !== undefined ? dropX : 20 + Math.random() * 60;
+  const y = dropY !== undefined ? dropY : 15 + Math.random() * 70;
+  sendAction("play_spell", { cardId, x, y });
+  setSelectedCard(null); setInspectCard(null);
+}, [sendAction]);
 
   const handlePlaceDualist = useCallback((cardId: string) => {
     sendAction("place_dualist", { cardId });
@@ -202,8 +190,8 @@ export default function GamePage() {
   const inspectedCardDef = activeInspectCardId ? CARD_MAP[activeInspectCardId] : null;
   const inspectedCardTx = activeInspectCardId ? cardTranslations[activeInspectCardId]?.[locale] : null;
 
-  const mySpells = placedSpells.filter(s => s.playerId === myUsername);
-  const oppSpells = placedSpells.filter(s => s.playerId !== myUsername);
+const mySpells = me.spellsOnBoard ?? [];
+const oppSpells = opponent.spellsOnBoard ?? [];
 
   const cardName = (cardId: string) =>
     cardTranslations[cardId]?.[locale]?.name ?? CARD_MAP[cardId]?.name ?? cardId;
@@ -590,7 +578,7 @@ onClick={e => {
                   <span className={styles.resultPowerVs}>vs</span>
                   <div className={styles.resultPowerBox}><span className={styles.resultPowerName}>{opponent.username}</span><span className={styles.resultPowerValue}>{opponent.dualistPower}</span></div>
                 </div>
-                <button className={styles.nextRoundBtn} onClick={() => { sendAction("next_round"); setPlacedSpells([]); }}>{t.nextRound}</button>
+<button className={styles.nextRoundBtn} onClick={() => { sendAction("next_round"); }}>Next Round →</button>
               </div>
             </div>
           )}
