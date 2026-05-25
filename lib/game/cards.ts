@@ -13,6 +13,7 @@ export interface CardDefinition {
   categories: string[];           // e.g. ["Beast", "Troll"]
   spellDescription: string;
   dualistDescription: string;
+  image?: string;                 // path relative to /public, e.g. "/cards/friendly_troll.jpg"
   isFlipEffect?: boolean;         // true = dualist effect fires on reveal, not on placement
   isInstant?: boolean;            // true = spell effect fires immediately with no delay
   spellEffect:   (state: GameState, playerId: string) => GameState;
@@ -87,6 +88,7 @@ const FriendlyTroll: CardDefinition = {
   name: "Friendly Troll",
   basePower: 4,
   categories: ["Beast", "Troll"],
+  image: "/cards/friendly_troll.jpg",
   isFlipEffect: true,
   spellDescription: "Your Dualist gets +2 if you have no cards in hand (Flip Effect)",
   dualistDescription: "The troll has +2 if you have no cards in hand (Flip Effect)",
