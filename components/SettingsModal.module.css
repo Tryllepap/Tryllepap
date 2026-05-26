@@ -1,0 +1,46 @@
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(5,3,2,0.88);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  animation: overlayIn 0.2s ease;
+}
+.modal {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  padding: 2rem 2rem 1.8rem;
+  width: 100%; max-width: 480px;
+  max-height: 90dvh; overflow-y: auto;
+  box-shadow: var(--shadow-card), 0 0 60px rgba(201,146,58,0.12);
+  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal::-webkit-scrollbar { width: 4px; }
+.modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.cornerTl { position: absolute; top: 8px; left: 10px; font-size: 0.7rem; color: var(--border-gold); user-select: none; }
+.cornerBr { position: absolute; bottom: 8px; right: 10px; font-size: 0.7rem; color: var(--border-gold); user-select: none; }
+.closeBtn { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--text-faint); font-size: 0.85rem; cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: color 0.2s; }
+.closeBtn:hover { color: var(--gold); }
+.title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-light); text-align: center; margin-bottom: 0.6rem; }
+.titleDivider { height: 1px; background: linear-gradient(to right, transparent, var(--border-gold), transparent); opacity: 0.35; margin-bottom: 1.4rem; }
+.section { margin-bottom: 1.6rem; }
+.sectionTitle { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.6rem; }
+.comingSoon { font-size: 0.5rem; letter-spacing: 0.08em; color: var(--text-faint); border: 1px solid var(--border); padding: 1px 6px; border-radius: 20px; text-transform: uppercase; font-family: var(--font-display); }
+.themeGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+.themeBtn { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.7rem 0.5rem; cursor: pointer; transition: border-color 0.2s, transform 0.15s; }
+.themeBtn:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+.themeBtnActive { border-color: var(--gold) !important; box-shadow: 0 0 12px rgba(201,146,58,0.2); }
+.themePreview { width: 28px; height: 28px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+.themeBtnLabel { font-family: var(--font-display); font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.optionRow { display: flex; gap: 0.6rem; }
+.optionBtn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.65rem 0.5rem; cursor: pointer; transition: border-color 0.2s, transform 0.15s; }
+.optionBtn:hover { border-color: var(--border-gold); transform: translateY(-1px); }
+.optionBtnActive { border-color: var(--gold) !important; box-shadow: 0 0 12px rgba(201,146,58,0.2); }
+.optionLabel { font-family: var(--font-display); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; color: var(--text); }
+.optionDesc { font-size: 0.6rem; color: var(--text-faint); font-style: italic; text-align: center; }
+.sliderRow { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.6rem; opacity: 0.4; }
+.sliderLabel { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); min-width: 44px; }
+.slider { flex: 1; height: 4px; appearance: none; background: var(--border); border-radius: 2px; cursor: not-allowed; }
+.sliderValue { font-family: var(--font-display); font-size: 0.62rem; color: var(--text-faint); min-width: 34px; text-align: right; }
