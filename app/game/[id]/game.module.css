@@ -495,3 +495,28 @@
   padding: 1px 4px;
   flex-shrink: 0;
 }
+/* Settings button */
+.settingsBtn {
+  background: none; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-faint);
+  font-size: 0.9rem; cursor: pointer; padding: 0.25rem 0.5rem;
+  transition: color 0.2s, border-color 0.2s;
+  margin-left: 0.5rem;
+}
+.settingsBtn:hover { color: var(--gold); border-color: var(--border-gold); }
+
+/* Hand card width from CSS var */
+.handCard {
+  width: var(--card-width, 100px);
+}
+
+/* Give hand room so lifted cards don't get clipped by buttons above */
+.myHand {
+  padding-top: 1.2rem;
+  overflow: visible;
+}
+
+/* myHalf needs overflow visible too so lifted cards show */
+.myHalf {
+  overflow: visible;
+}
