@@ -115,7 +115,7 @@ const [inspectSpell, setInspectSpell] = useState<{ instanceId: string; cardId: s
       setGameState(state);
       if (state.phase === "rps" && state.rpsResult && rpsPhase !== "revealing" && rpsPhase !== "done") runRpsReveal(state);
       if (state.phase === "playing") { setRpsPhase("choosing"); acknowledgedRps.current = false; }
-      if (state.phase === "round_result" || state.phase === "game_over") setPlacedSpells([]);
+      if (state.phase === "round_result" || state.phase === "game_over") { /* spells cleared by server state */ }
     });
     return () => { getPusherClient().unsubscribe(`game-${id}`); };
   }, [id, rpsPhase, runRpsReveal]);
