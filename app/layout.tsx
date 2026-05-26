@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cinzel, IM_Fell_English } from "next/font/google";
 import "./globals.css";
+import { SettingsProvider } from "@/lib/settings";
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -26,7 +27,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${cinzel.variable} ${imFell.variable}`}>
-      <body>{children}</body>
+      <body>
+        <SettingsProvider>
+          {children}
+        </SettingsProvider>
+      </body>
     </html>
   );
 }
