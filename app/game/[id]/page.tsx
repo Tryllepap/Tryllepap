@@ -12,8 +12,6 @@ import styles from "./game.module.css";
 type RpsChoice = "rock" | "paper" | "scissors";
 const RPS_EMOJI: Record<RpsChoice, string> = { rock: "🪨", paper: "📄", scissors: "✂️" };
 
-
-
 export default function GamePage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
@@ -22,11 +20,11 @@ export default function GamePage() {
   const [inspectCard, setInspectCard] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [locale, setLocale] = useState<Locale>("en");
+  const [locale, setLocale] = useState<<Locale>("en");
 
   const t = translations[locale];
 
-  const [rpsPhase, setRpsPhase] = useState<"choosing" | "waiting" | "revealing" | "done">("choosing");
+  const [rpsPhase, setRpsPhase] = useState<<"choosing" | "waiting" | "revealing" | "done">("choosing");
   const [rpsMyChoice, setRpsMyChoice] = useState<RpsChoice | null>(null);
   const [rpsOppChoice, setRpsOppChoice] = useState<RpsChoice | null>(null);
   const [rpsWinner, setRpsWinner] = useState<string | "draw" | null>(null);
@@ -37,7 +35,7 @@ export default function GamePage() {
   const [dragOverDualist, setDragOverDualist] = useState(false);
   const [dragOverMyBoard, setDragOverMyBoard] = useState(false);
 
-const [inspectSpell, setInspectSpell] = useState<{ instanceId: string; cardId: string } | null>(null);
+  const [inspectSpell, setInspectSpell] = useState<{ instanceId: string; cardId: string } | null>(null);
 
   const [logWidth, setLogWidth] = useState(200);
   const logResizing = useRef(false);
@@ -49,7 +47,7 @@ const [inspectSpell, setInspectSpell] = useState<{ instanceId: string; cardId: s
   const inspResizeStart = useRef(0);
   const inspWidthStart = useRef(240);
 
-  const myBoardRef = useRef<HTMLDivElement>(null);
+  const myBoardRef = useRef<<HTMLDivElement>(null);
   const myUsernameRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -137,12 +135,12 @@ const [inspectSpell, setInspectSpell] = useState<{ instanceId: string; cardId: s
     sendAction("rps", { choice });
   };
 
-const handlePlaySpell = useCallback((cardId: string, dropX?: number, dropY?: number) => {
-  const x = dropX !== undefined ? dropX : 20 + Math.random() * 60;
-  const y = dropY !== undefined ? dropY : 15 + Math.random() * 70;
-  sendAction("play_spell", { cardId, x, y });
-  setSelectedCard(null); setInspectCard(null);
-}, [sendAction]);
+  const handlePlaySpell = useCallback((cardId: string, dropX?: number, dropY?: number) => {
+    const x = dropX !== undefined ? dropX : 20 + Math.random() * 60;
+    const y = dropY !== undefined ? dropY : 15 + Math.random() * 70;
+    sendAction("play_spell", { cardId, x, y });
+    setSelectedCard(null); setInspectCard(null);
+  }, [sendAction]);
 
   const handlePlaceDualist = useCallback((cardId: string) => {
     sendAction("place_dualist", { cardId });
@@ -190,8 +188,8 @@ const handlePlaySpell = useCallback((cardId: string, dropX?: number, dropY?: num
   const inspectedCardDef = activeInspectCardId ? CARD_MAP[activeInspectCardId] : null;
   const inspectedCardTx = activeInspectCardId ? cardTranslations[activeInspectCardId]?.[locale] : null;
 
-const mySpells = me.spellsOnBoard ?? [];
-const oppSpells = opponent.spellsOnBoard ?? [];
+  const mySpells = me.spellsOnBoard ?? [];
+  const oppSpells = opponent.spellsOnBoard ?? [];
 
   const cardName = (cardId: string) =>
     cardTranslations[cardId]?.[locale]?.name ?? CARD_MAP[cardId]?.name ?? cardId;
@@ -329,36 +327,34 @@ const oppSpells = opponent.spellsOnBoard ?? [];
                 </div>
                 <div className={styles.oppBoard}>
                   <div className={styles.dualistAnchor}>
-<div
-  className={`${styles.dualistSlot} ${opponent.dualist ? styles.dualistSlotFilled : ""}`}
-  onClick={e => {
-    e.stopPropagation();
-    if (opponent.dualist && phase === "resolution") {
-      setInspectCard(inspectCard === opponent.dualist ? null : opponent.dualist);
-      setInspectSpell(null);
-    }
-  }}
->
-  {opponent.dualist && phase === "resolution" ? (
-    // Revealed — show card image or text
-    <div className={styles.dsInner}>
-      {CARD_MAP[opponent.dualist]?.image
-        ? <img src={CARD_MAP[opponent.dualist].image} alt={cardName(opponent.dualist)} className={styles.dsImage} />
-        : <>
-            <span className={styles.dsSuit}>♦</span>
-            <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
-            <span className={styles.dsPower}>{opponent.dualistPower}</span>
-          </>
-      }
-    </div>
-  ) : opponent.dualist ? (
-    // Face down — show back of card
-    <div className={styles.dsInner}>
-      <span className={styles.dsBack}>?</span>
-    </div>
-  ) : null}
-</div>
-<span className={styles.dualistLabel}>{t.dualist}</span>
+                    <div
+                      className={`${styles.dualistSlot} ${opponent.dualist ? styles.dualistSlotFilled : ""}`}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (opponent.dualist && phase === "resolution") {
+                          setInspectCard(inspectCard === opponent.dualist ? null : opponent.dualist);
+                          setInspectSpell(null);
+                        }
+                      }}
+                    >
+                      {opponent.dualist && phase === "resolution" ? (
+                        <div className={styles.dsInner}>
+                          {CARD_MAP[opponent.dualist]?.image
+                            ? <img src={CARD_MAP[opponent.dualist].image} alt={cardName(opponent.dualist)} className={styles.dsImage} />
+                            : <>
+                                <span className={styles.dsSuit}>♦</span>
+                                <span className={styles.dsName}>{cardName(opponent.dualist)}</span>
+                                <span className={styles.dsPower}>{opponent.dualistPower}</span>
+                              </>
+                          }
+                        </div>
+                      ) : opponent.dualist ? (
+                        <div className={styles.dsInner}>
+                          <span className={styles.dsBack}>?</span>
+                        </div>
+                      ) : null}
+                    </div>
+                    <span className={styles.dualistLabel}>{t.dualist}</span>
                   </div>
                   {oppSpells.map(spell => {
                     const card = CARD_MAP[spell.cardId];
@@ -370,13 +366,13 @@ const oppSpells = opponent.spellsOnBoard ?? [];
                         style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
                         onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
                       >
-{card?.image
-  ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
-  : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
-}
-{!card?.image && (
-  <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
-)}
+                        {card?.image
+                          ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
+                          : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
+                        }
+                        {!card?.image && (
+                          <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
+                        )}
                       </div>
                     );
                   })}
@@ -430,16 +426,15 @@ const oppSpells = opponent.spellsOnBoard ?? [];
                       onDragOver={e => { e.preventDefault(); e.stopPropagation(); if (!me.dualist) setDragOverDualist(true); }}
                       onDragLeave={() => setDragOverDualist(false)}
                       onDrop={onDropDualist}
-onClick={e => {
-  e.stopPropagation();
-  if (me.dualist) {
-    // Inspect placed dualist
-    setInspectCard(inspectCard === me.dualist ? null : me.dualist);
-    setInspectSpell(null);
-  } else if (selectedCard && isMyTurn && phase === "playing") {
-    handlePlaceDualist(selectedCard);
-  }
-}}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (me.dualist) {
+                          setInspectCard(inspectCard === me.dualist ? null : me.dualist);
+                          setInspectSpell(null);
+                        } else if (selectedCard && isMyTurn && phase === "playing") {
+                          handlePlaceDualist(selectedCard);
+                        }
+                      }}
                     >
                       {me.dualist ? (
                         <div className={styles.dsInner}>
@@ -470,26 +465,26 @@ onClick={e => {
                     {me.hasPassed && <span className={styles.passedBadge}>{t.passed}</span>}
                   </div>
 
-{mySpells.map(spell => {
-  const card = CARD_MAP[spell.cardId];
-  const isInspected = inspectSpell?.instanceId === spell.instanceId;
-  return (
-    <div
-      key={spell.instanceId}
-      className={`${styles.spellToken} ${styles.spellTokenMine} ${isInspected ? styles.spellTokenInspected : ""}`}
-      style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
-      onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
-    >
-{card?.image
-  ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
-  : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
-}
-{!card?.image && (
-  <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
-)}
-    </div>
-  );
-})}
+                  {mySpells.map(spell => {
+                    const card = CARD_MAP[spell.cardId];
+                    const isInspected = inspectSpell?.instanceId === spell.instanceId;
+                    return (
+                      <div
+                        key={spell.instanceId}
+                        className={`${styles.spellToken} ${styles.spellTokenMine} ${isInspected ? styles.spellTokenInspected : ""}`}
+                        style={{ left: `${spell.x}%`, top: `${spell.y}%` }}
+                        onClick={e => { e.stopPropagation(); setInspectSpell(isInspected ? null : spell); setInspectCard(null); }}
+                      >
+                        {card?.image
+                          ? <img src={card.image} alt={card.name} className={styles.spellTokenImage} />
+                          : <div className={styles.spellTokenArt}>{card?.name[0] ?? "?"}</div>
+                        }
+                        {!card?.image && (
+                          <div className={styles.spellTokenLabel}>{cardName(spell.cardId)}</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className={styles.playerNameRow}>
@@ -529,9 +524,9 @@ onClick={e => {
                           if (!disabled) setSelectedCard(isSelected ? null : cardId);
                         }}
                       >
-{card.image
-  ? <img src={card.image} alt={card.name} className={styles.handCardImage} />
-  : <>
+                        {card.image
+                          ? <img src={card.image} alt={card.name} className={styles.handCardImage} />
+                          : <>
                               <div className={styles.handCardGlow} />
                               <div className={styles.handCardTop}>
                                 <span className={styles.handCardName}>{tx?.name ?? card.name}</span>
@@ -578,7 +573,7 @@ onClick={e => {
                   <span className={styles.resultPowerVs}>vs</span>
                   <div className={styles.resultPowerBox}><span className={styles.resultPowerName}>{opponent.username}</span><span className={styles.resultPowerValue}>{opponent.dualistPower}</span></div>
                 </div>
-<button className={styles.nextRoundBtn} onClick={() => { sendAction("next_round"); }}>Next Round →</button>
+                <button className={styles.nextRoundBtn} onClick={() => { sendAction("next_round"); }}>Next Round →</button>
               </div>
             </div>
           )}
