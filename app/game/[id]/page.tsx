@@ -8,9 +8,15 @@ import { GameState } from "@/lib/game/state";
 import { CARD_MAP } from "@/lib/game/cards";
 import { translations, cardTranslations, Locale } from "@/lib/i18n";
 import styles from "./game.module.css";
+import dynamic from "next/dynamic";
+import { useSettings } from "@/lib/settings";
+const SettingsModal = dynamic(() => import("@/components/SettingsModal"), { ssr: false });
+const DualistReveal = dynamic(() => import("@/components/DualistReveal"), { ssr: false });
 
 type RpsChoice = "rock" | "paper" | "scissors";
 const RPS_EMOJI: Record<RpsChoice, string> = { rock: "🪨", paper: "📄", scissors: "✂️" };
+
+
 
 export default function GamePage() {
   const router = useRouter();
@@ -20,11 +26,16 @@ export default function GamePage() {
   const [inspectCard, setInspectCard] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [locale, setLocale] = useState<<Locale>("en");
+  const [locale, setLocale] = useState<Locale>("en");
 
   const t = translations[locale];
 
-  const [rpsPhase, setRpsPhase] = useState<<"choosing" | "waiting" | "revealing" | "done">("choosing");
+  const { settings } = useSettings();
+  const [showSettings, setShowSettings] = useState(false);
+  const [showReveal, setShowReveal] = useState(false);
+  const [revealSnapshot, setRevealSnapshot] = useState<{ me: PlayerState; opponent: PlayerState } | null>(null);
+
+  const [rpsPhase, setRpsPhase] = useState<"choosing" | "waiting" | "revealing" | "done">("choosing");
   const [rpsMyChoice, setRpsMyChoice] = useState<RpsChoice | null>(null);
   const [rpsOppChoice, setRpsOppChoice] = useState<RpsChoice | null>(null);
   const [rpsWinner, setRpsWinner] = useState<string | "draw" | null>(null);
@@ -47,7 +58,7 @@ export default function GamePage() {
   const inspResizeStart = useRef(0);
   const inspWidthStart = useRef(240);
 
-  const myBoardRef = useRef<<HTMLDivElement>(null);
+  const myBoardRef = useRef<HTMLDivElement>(null);
   const myUsernameRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -110,10 +121,19 @@ export default function GamePage() {
   useEffect(() => {
     const channel = getPusherClient().subscribe(`game-${id}`);
     channel.bind("state-update", (state: GameState) => {
-      setGameState(state);
+      setGameState(prev => {
+        if (prev?.phase === "playing" && state.phase === "resolution") {
+          const me = state.players.find(p => p.id === myUsernameRef.current);
+          const opp = state.players.find(p => p.id !== myUsernameRef.current);
+          if (me && opp) {
+            setRevealSnapshot({ me, opponent: opp });
+            setShowReveal(true);
+          }
+        }
+        return state;
+      });
       if (state.phase === "rps" && state.rpsResult && rpsPhase !== "revealing" && rpsPhase !== "done") runRpsReveal(state);
       if (state.phase === "playing") { setRpsPhase("choosing"); acknowledgedRps.current = false; }
-      if (state.phase === "round_result" || state.phase === "game_over") { /* spells cleared by server state */ }
     });
     return () => { getPusherClient().unsubscribe(`game-${id}`); };
   }, [id, rpsPhase, runRpsReveal]);
@@ -184,6 +204,9 @@ export default function GamePage() {
   const isMyTurn = gameState.activePlayerId === myUsername;
   const phase = gameState.phase;
 
+  const cardSizeMap = { small: 84, medium: 100, large: 118 };
+  const cardWidth = cardSizeMap[settings.cardSize];
+
   const activeInspectCardId = inspectSpell ? inspectSpell.cardId : inspectCard;
   const inspectedCardDef = activeInspectCardId ? CARD_MAP[activeInspectCardId] : null;
   const inspectedCardTx = activeInspectCardId ? cardTranslations[activeInspectCardId]?.[locale] : null;
@@ -231,6 +254,14 @@ export default function GamePage() {
           aria-label="Toggle language"
         >
           {locale === "en" ? "🇬🇧" : "🇩🇰"}
+        </button>
+        <button
+          className={styles.settingsBtn}
+          onClick={() => setShowSettings(true)}
+          aria-label="Settings"
+          title="Settings"
+        >
+          ⚙
         </button>
       </header>
 
@@ -502,7 +533,7 @@ export default function GamePage() {
                   )}
                 </div>
 
-                <div className={styles.myHand}>
+                <div className={styles.myHand} style={{ "--card-width": `${cardWidth}px` } as React.CSSProperties}>
                   {me.hand.map((cardId, i) => {
                     const card = CARD_MAP[cardId];
                     if (!card) return null;
@@ -665,6 +696,18 @@ export default function GamePage() {
           )}
         </aside>
       </div>
+
+      {showReveal && revealSnapshot && (
+        <DualistReveal
+          me={revealSnapshot.me}
+          opponent={revealSnapshot.opponent}
+          myUsername={myUsername}
+          locale={locale}
+          animLevel={settings.animationLevel}
+          onComplete={() => setShowReveal(false)}
+        />
+      )}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </main>
   );
 }
