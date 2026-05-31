@@ -27,6 +27,8 @@ export default function GamePage() {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [locale, setLocale] = useState<Locale>("en");
+  const [showLibraryToCellar, setShowLibraryToCellar] = useState(false);
+const [libraryToCellarCount, setLibraryToCellarCount] = useState(0);
 
   const t = translations[locale];
 
@@ -134,6 +136,12 @@ export default function GamePage() {
       });
       if (state.phase === "rps" && state.rpsResult && rpsPhase !== "revealing" && rpsPhase !== "done") runRpsReveal(state);
       if (state.phase === "playing") { setRpsPhase("choosing"); acknowledgedRps.current = false; }
+      if (state.phase === "round_result") {
+  const myState = state.players.find(p => p.id === myUsernameRef.current);
+  if (myState?.pendingLibraryToCellar) {
+    setShowLibraryToCellar(true);
+  }
+}
     });
     return () => { getPusherClient().unsubscribe(`game-${id}`); };
   }, [id, rpsPhase, runRpsReveal]);
@@ -708,6 +716,42 @@ export default function GamePage() {
         />
       )}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showLibraryToCellar && me && (
+  <div className={styles.libraryModal}>
+    <div className={styles.libraryModalBox}>
+      <span className={styles.cornerTlSmall}>♠</span>
+      <span className={styles.cornerBrSmall}>♦</span>
+      <h3 className={styles.libraryModalTitle}>Library to Cellar</h3>
+      <p className={styles.libraryModalDesc}>
+        Choose how many cards to send from the top of your library to your cellar.
+        <br />
+        <span className={styles.libraryModalSub}>Your library has {me.deck.length} cards remaining.</span>
+      </p>
+      <div className={styles.libraryCountRow}>
+        {[0,1,2,3,4,5].map(n => (
+          <button
+            key={n}
+            className={`${styles.libraryCountBtn} ${libraryToCellarCount === n ? styles.libraryCountBtnActive : ""}`}
+            onClick={() => setLibraryToCellarCount(n)}
+            disabled={n > me.deck.length}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+      <button
+        className={styles.libraryConfirmBtn}
+        onClick={() => {
+          sendAction("library_to_cellar", { count: libraryToCellarCount });
+          setShowLibraryToCellar(false);
+          setLibraryToCellarCount(0);
+        }}
+      >
+        Confirm — Send {libraryToCellarCount} card{libraryToCellarCount !== 1 ? "s" : ""}
+      </button>
+    </div>
+  </div>
+)}
     </main>
   );
 }
