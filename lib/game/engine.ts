@@ -286,3 +286,31 @@ export function startNextRound(state: GameState): GameState {
   s = addLog(s, `── Round ${s.roundNumber} begins. ${getPlayer(s, firstPlayerId).username} goes first. ──`);
   return s;
 }
+
+/**
+ * LIBRARY TO CELLAR
+ * Player chooses to move 0–5 cards from the top of their deck into their discard.
+ * Called by client after Lecture in Magic Ecosystems' dualist effect fires.
+ */
+export function libraryToCellar(
+  state: GameState,
+  playerId: string,
+  count: number // 0–5, chosen by the player
+): GameState {
+  const clamped = Math.max(0, Math.min(5, count));
+  let s = updatePlayer(state, playerId, player => {
+    const deck = [...player.deck];
+    const discard = [...player.discard];
+    // Take from the top (index 0) of the deck
+    const moved = deck.splice(0, clamped);
+    discard.push(...moved);
+    return {
+      ...player,
+      deck,
+      discard,
+      pendingLibraryToCellar: false,
+    };
+  });
+  s = addLog(s, `${getPlayer(state, playerId).username} sent ${clamped} card${clamped !== 1 ? "s" : ""} from their library to their cellar.`);
+  return s;
+}
