@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getPusherClient } from "@/lib/pusher";
-import { GameState } from "@/lib/game/state";
+import { GameState, PlayerState } from "@/lib/game/state";
 import { CARD_MAP } from "@/lib/game/cards";
 import { translations, cardTranslations, Locale } from "@/lib/i18n";
 import styles from "./game.module.css";
