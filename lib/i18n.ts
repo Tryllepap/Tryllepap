@@ -150,7 +150,7 @@ export const cardTranslations: Record<string, Record<Locale, CardTranslation>> =
     en: { name: "Monrad", spellDescription: "Discard 1 card", dualistDescription: "Discard 1 card", categories: [] },
     da: { name: "Monrad", spellDescription: "Kassér 1 kort", dualistDescription: "Kassér 1 kort", categories: [] },
   },
-  friendly_troll: {
+friendly_troll: {
     en: {
       name: "Friendly Troll",
       spellDescription: "Your Dualist gets +2 if you have no cards in hand (Flip Effect)",
@@ -163,11 +163,19 @@ export const cardTranslations: Record<string, Record<Locale, CardTranslation>> =
       dualistDescription: "Trolden har +2, hvis du ikke har nogle kort på hånden (Vendingseffekt)",
       categories: ["Bæst", "Trold"],
     },
-werewolf_student: {
-  da: {
-    name: "Vareulveelev",
-    spellDescription: "Din duellant får +1. (Vendingseffekt)",
-    dualistDescription: "Eleven får +1 for hvert bæst, du har kastet. (Vendingseffekt)",
-    categories: ["Hus Fafner", "Elev", "Bæst", "Vareulv", "Ritual"],
   },
-},
+  werewolf_student: {
+    en: {
+      name: "Werewolf Student",
+      spellDescription: "Your dualist gets +1 power. (Flip Effect)",
+      dualistDescription: "The student gets +1 for each Beast card thrown this round. (Flip Effect)",
+      categories: ["House Fafner", "Student", "Beast", "Werewolf", "Ritual"],
+    },
+    da: {
+      name: "Vareulveelev",
+      spellDescription: "Din duellant får +1. (Vendingseffekt)",
+      dualistDescription: "Eleven får +1 for hvert bæst, du har kastet. (Vendingseffekt)",
+      categories: ["Hus Fafner", "Elev", "Bæst", "Vareulv", "Ritual"],
+    },
+  },
+};
