@@ -11,6 +11,7 @@ import {
   placeDualist,
   passAction,
   startNextRound,
+  libraryToCellar,
   RpsChoice,
 } from "@/lib/game";
 
@@ -54,6 +55,9 @@ case "play_spell":
         break;
       default:
         return NextResponse.json({ error: "Unknown action." }, { status: 400 });
+        case "library_to_cellar":
+  state = libraryToCellar(state, playerId, payload.count ?? 0);
+  break;
     }
 
     await saveGameState(lobbyId, state);
