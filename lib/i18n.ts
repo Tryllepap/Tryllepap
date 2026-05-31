@@ -177,5 +177,18 @@ friendly_troll: {
       dualistDescription: "Eleven får +1 for hvert bæst, du har kastet. (Vendingseffekt)",
       categories: ["Hus Fafner", "Elev", "Bæst", "Vareulv", "Ritual"],
     },
+lecture_magic_ecosystems: {
+    en: {
+      name: "Lecture in Magic Ecosystems",
+      spellDescription: "Your dualist gets +1 for each Beast card in your cellar. (Flip Effect)",
+      dualistDescription: "You lose the duel. Put up to 5 cards from the top of your library into the cellar. (Flip Effect)",
+      categories: ["Subject", "Ritual"],
+    },
+    da: {
+      name: "Undervisning i magiske økosystemer",
+      spellDescription: "Din duellant får +1 for hvert Bæst i din kælder. (Vendingseffekt)",
+      dualistDescription: "Du taber duellen. Læg op til 5 kort fra toppen af dit bibliotek ned i kælderen. (Vendingseffekt)",
+      categories: ["Fag", "Ritual"],
+    },
   },
 };
