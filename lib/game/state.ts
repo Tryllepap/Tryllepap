@@ -30,6 +30,7 @@ export interface PlayerState {
   rpsChoice: RpsChoice | null;
   spellsPlayed: string[];
   spellsOnBoard: BoardSpell[];
+  pendingLibraryToCellar: boolean; // true = player must choose how many cards to send to cellar
 }
 
 export interface GameState {
@@ -51,20 +52,21 @@ export function createInitialState(
   player1: { id: string; username: string },
   player2: { id: string; username: string }
 ): GameState {
-  const makePlayer = (p: { id: string; username: string }): PlayerState => ({
-    id: p.id,
-    username: p.username,
-    hand: [],
-    deck: buildDeck(3),
-    discard: [],
-    dualist: null,
-    dualistPower: 0,
-    roundsWon: 0,
-    hasPassed: false,
-    rpsChoice: null,
-    spellsPlayed: [],
-    spellsOnBoard: [],
-  });
+const makePlayer = (p: { id: string; username: string }): PlayerState => ({
+  id: p.id,
+  username: p.username,
+  hand: [],
+  deck: buildDeck(3),
+  discard: [],
+  dualist: null,
+  dualistPower: 0,
+  roundsWon: 0,
+  hasPassed: false,
+  rpsChoice: null,
+  spellsPlayed: [],
+  spellsOnBoard: [],
+  pendingLibraryToCellar: false,
+});
 
   return {
     id: gameId,
@@ -169,6 +171,7 @@ export function resetForNewRound(state: GameState, firstPlayerId: string): GameS
       hasPassed: false,
       spellsPlayed: [],
       spellsOnBoard: [],
+      pendingLibraryToCellar: false,
     })),
   };
 }
