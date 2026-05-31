@@ -163,5 +163,11 @@ export const cardTranslations: Record<string, Record<Locale, CardTranslation>> =
       dualistDescription: "Trolden har +2, hvis du ikke har nogle kort på hånden (Vendingseffekt)",
       categories: ["Bæst", "Trold"],
     },
+werewolf_student: {
+  da: {
+    name: "Vareulveelev",
+    spellDescription: "Din duellant får +1. (Vendingseffekt)",
+    dualistDescription: "Eleven får +1 for hvert bæst, du har kastet. (Vendingseffekt)",
+    categories: ["Hus Fafner", "Elev", "Bæst", "Vareulv", "Ritual"],
   },
-};
+},
