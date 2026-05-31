@@ -78,6 +78,36 @@ const Monrad: CardDefinition = {
 };
 
 /**
+ * WEREWOLF STUDENT / VAREULVEELEV
+ * Spell:   Your dualist gets +1 power. (Flip Effect)
+ * Dualist: The student gets +1 for each Beast card thrown this round. (Flip Effect)
+ * Categories: House Fafner, Student, Beast, Werewolf, Ritual
+ */
+const WerewolfStudent: CardDefinition = {
+  id: "werewolf_student",
+  name: "Werewolf Student",
+  basePower: 1,
+  categories: ["House Fafner", "Student", "Beast", "Werewolf", "Ritual"],
+  image: "/cards/werewolf-student.jpg",
+  isFlipEffect: true,
+  spellDescription: "Your dualist gets +1 power. (Flip Effect)",
+  dualistDescription: "The student gets +1 for each Beast card thrown this round. (Flip Effect)",
+  spellEffect: (state, playerId) => {
+    // Flip Effect — applies at resolution, not immediately on cast
+    return applyPowerDelta(state, playerId, +1);
+  },
+  dualistEffect: (state, playerId) => {
+    // Count Beast cards the player has thrown on the board this round
+    const player = getPlayer(state, playerId);
+    const beastCount = (player.spellsOnBoard ?? []).filter(spell => {
+      const card = CARD_MAP[spell.cardId];
+      return card?.categories?.includes("Beast");
+    }).length;
+    return applyPowerDelta(state, playerId, beastCount);
+  },
+};
+
+/**
  * FRIENDLY TROLL
  * Spell:   Your dualist gets +2 if you have no cards in hand (Flip Effect)
  * Dualist: +2 if you have no cards in hand (Flip Effect)
@@ -114,6 +144,7 @@ export const CARD_REGISTRY: CardDefinition[] = [
   Donrad,
   Monrad,
   FriendlyTroll,
+  WerewolfStudent,
 ];
 
 export const CARD_MAP: Record<string, CardDefinition> = Object.fromEntries(
