@@ -136,6 +136,49 @@ const FriendlyTroll: CardDefinition = {
     }
     return state;
   },
+/**
+ * LECTURE IN MAGIC ECOSYSTEMS / UNDERVISNING I MAGISKE ØKOSYSTEMER
+ * Spell:   Your dualist gets +1 for each Beast card in your cellar. (Flip Effect)
+ * Dualist: You lose the duel. Put up to 5 cards from the top of your library into the cellar. (Flip Effect)
+ * Categories: Subject, Ritual
+ *
+ * CELLAR = player.discard (graveyard)
+ * LIBRARY = player.deck
+ *
+ * The "put up to 5 from library to cellar" triggers a client-side modal
+ * letting the player choose how many (0–5). The actual move is handled
+ * by the "library_to_cellar" action in the engine.
+ *
+ * The dualist effect sets dualistPower to -999 so the opponent always wins,
+ * then the library_to_cellar action is sent separately by the client.
+ */
+const LectureMagicEcosystems: CardDefinition = {
+  id: "lecture_magic_ecosystems",
+  name: "Lecture in Magic Ecosystems",
+  basePower: 0,
+  categories: ["Subject", "Ritual"],
+  image: "/cards/lecture-magic-ecosystems.jpg",
+  isFlipEffect: true,
+  spellDescription: "Your dualist gets +1 for each Beast card in your cellar. (Flip Effect)",
+  dualistDescription: "You lose the duel. Put up to 5 cards from the top of your library into the cellar. (Flip Effect)",
+  spellEffect: (state, playerId) => {
+    // Count Beast cards in this player's cellar (discard pile)
+    const player = getPlayer(state, playerId);
+    const beastCount = player.discard.filter(cardId => {
+      const card = CARD_MAP[cardId];
+      return card?.categories?.includes("Beast");
+    }).length;
+    return applyPowerDelta(state, playerId, beastCount);
+  },
+  dualistEffect: (state, playerId) => {
+    // Force a loss by setting dualist power to -999
+    // The library_to_cellar action is sent by the client after this resolves
+    return updatePlayer(state, playerId, p => ({
+      ...p,
+      dualistPower: -999,
+      pendingLibraryToCellar: true,
+    }));
+  },
 };
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
@@ -145,6 +188,7 @@ export const CARD_REGISTRY: CardDefinition[] = [
   Monrad,
   FriendlyTroll,
   WerewolfStudent,
+  LectureMagicEcosystems,
 ];
 
 export const CARD_MAP: Record<string, CardDefinition> = Object.fromEntries(
