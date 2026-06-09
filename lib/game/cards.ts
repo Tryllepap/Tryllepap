@@ -164,6 +164,30 @@ const LectureMagicEcosystems: CardDefinition = {
   spellDescription: "Your dualist gets +1 for each Beast card in your cellar. (Flip Effect)",
   dualistDescription: "You lose the duel. Put up to 5 cards from the top of your library into the cellar. (Flip Effect)",
   spellEffect: (state, playerId) => {
+    const player = getPlayer(state, playerId);
+    const beastCount = player.discard.filter(cardId => {
+      const card = CARD_MAP[cardId];
+      return card?.categories?.includes("Beast");
+    }).length;
+    return applyPowerDelta(state, playerId, beastCount);
+  },
+  dualistEffect: (state, playerId) => {
+    return updatePlayer(state, playerId, p => ({
+      ...p,
+      dualistPower: -999,
+      pendingLibraryToCellar: true,
+    }));
+  },
+};
+  id: "lecture_magic_ecosystems",
+  name: "Lecture in Magic Ecosystems",
+  basePower: 0,
+  categories: ["Subject", "Ritual"],
+  image: "/cards/lecture-magic-ecosystems.jpg",
+  isFlipEffect: true,
+  spellDescription: "Your dualist gets +1 for each Beast card in your cellar. (Flip Effect)",
+  dualistDescription: "You lose the duel. Put up to 5 cards from the top of your library into the cellar. (Flip Effect)",
+  spellEffect: (state, playerId) => {
     // Count Beast cards in this player's cellar (discard pile)
     const player = getPlayer(state, playerId);
     const beastCount = player.discard.filter(cardId => {
