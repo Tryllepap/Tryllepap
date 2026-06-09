@@ -129,13 +129,15 @@ const FriendlyTroll: CardDefinition = {
     }
     return state;
   },
-  dualistEffect: (state, playerId) => {
+dualistEffect: (state, playerId) => {
     const player = getPlayer(state, playerId);
     if (player.hand.length === 0) {
       return applyPowerDelta(state, playerId, +2);
     }
     return state;
   },
+};
+
 /**
  * LECTURE IN MAGIC ECOSYSTEMS / UNDERVISNING I MAGISKE ØKOSYSTEMER
  * Spell:   Your dualist gets +1 for each Beast card in your cellar. (Flip Effect)
